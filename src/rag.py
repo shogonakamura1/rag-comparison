@@ -1,0 +1,55 @@
+from dataclasses import dataclass
+
+import google.generativeai as genai
+
+from src.config import Config
+from src.vectorstore import VectorStore
+
+
+@dataclass
+class RAGResponse:
+    answer: str
+    sources: list[str]
+
+
+class RAGPipeline:
+    def __init__(self, config: Config, vectorstore: VectorStore):
+        genai.configure(api_key=config.gemini_api_key)
+        self.model = genai.GenerativeModel("gemini-2.0-flash")
+        self.vectorstore = vectorstore
+        self.top_k = config.top_k
+
+    def ask(self, question: str) -> RAGResponse:
+        results = self.vectorstore.search(question, top_k=self.top_k)
+
+        if not results:
+            return RAGResponse(answer="関連情報が見つかりませんでした", sources=[])
+
+        prompt = self._build_prompt(question, results)
+        response = self.model.generate_content(prompt)
+
+        # Deduplicate source URLs while preserving order
+        seen: set[str] = set()
+        sources: list[str] = []
+        for r in results:
+            url = r["metadata"]["source_url"]
+            if url not in seen:
+                seen.add(url)
+                sources.append(url)
+
+        return RAGResponse(answer=response.text, sources=sources)
+
+    def _build_prompt(self, question: str, contexts: list[dict]) -> str:
+        context_parts = []
+        for ctx in contexts:
+            source_url = ctx["metadata"]["source_url"]
+            context_parts.append(f"ソース: {source_url}\n{ctx['text']}")
+
+        contexts_text = "\n\n".join(context_parts)
+
+        return (
+            "以下のコンテキスト情報を使って質問に回答してください。\n"
+            "コンテキストに含まれない情報については「情報が見つかりませんでした」と回答してください。\n\n"
+            f"コンテキスト:\n{contexts_text}\n\n"
+            f"質問: {question}"
+        )
