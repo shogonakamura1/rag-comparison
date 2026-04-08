@@ -1,0 +1,125 @@
+{
+  "results": [
+    {
+      "id": 1,
+      "question": "Claude 3.5 Sonnetの特徴は何ですか？",
+      "expected_answer": "Claude 3.5 Sonnetは、高い知能と高速な応答速度のバランスが取れたモデルです。コーディング、データ分析、テキスト生成などの幅広いタスクに適しており、コストパフォーマンスに優れています。",
+      "rag_answer": "Claude 3.5 Sonnetの主な特徴は以下の通りです。\n\n*   以前の世代のモデルです。\n*   知能と速度の優れたバランスで知られています。\n*   手頃な価格帯です。\n*   コーディング、データ分析、テキスト生成タスクに優れており、高いコストパフォーマンスを発揮します。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback"
+      ],
+      "category": "モデル比較"
+    },
+    {
+      "id": 2,
+      "question": "Claude 3 Opusのコンテキストウィンドウのサイズはどのくらいですか？",
+      "expected_answer": "Claude 3 Opusのコンテキストウィンドウは200Kトークンです。これにより、長い文書や複数のファイルを一度に処理することが可能で、大規模なコードベースの分析や長文の要約に適しています。",
+      "rag_answer": "コンテキストによると、Claude Opusの様々なモデルのコンテキストウィンドウのサイズは以下の通りです。\n\n*   **Claude Opus 4.5**: 200k tokens\n*   **Claude Opus 4.1**: 200k tokens\n*   **Claude Opus 4**: 200k tokens\n\nこれらの情報から、Claude Opusモデルのコンテキストウィンドウのサイズは**200kトークン**です。最新モデルであるClaude Opus 4.6に関する具体的な記載は、提供された表では途切れていますが、他のOpusモデルは全て200kトークンをサポートしています。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision"
+      ],
+      "category": "基本仕様"
+    },
+    {
+      "id": 3,
+      "question": "Claude APIのTool Use（関数呼び出し）機能について説明してください。",
+      "expected_answer": "Claude APIのTool Use機能は、外部ツールや関数の定義をモデルに渡すことで、モデルが適切なタイミングでツールの呼び出しを要求できる仕組みです。JSON Schemaで入力パラメータを定義し、モデルが構造化されたJSON形式でツール呼び出しを返します。検索、計算、API連携など様々な外部機能との統合が可能です。",
+      "rag_answer": "Claude APIのTool Use（関数呼び出し）機能は、Claudeが外部ツールやAPIと連携できるようにする機能です。\n\nこの機能の主な説明は以下の通りです。\n\n1.  **機能概要**:\n    *   Claudeが、定義された関数やAnthropicが提供する関数を呼び出すことを可能にします。\n    *   ユーザーのリクエストとツールの説明に基づいて、Claudeがいつツールを呼び出すかを判断し、構造化された呼び出し（`tool_use`ブロック）をアプリケーションに返します。\n    *   これにより、Claudeは外部API、データベース、検索エンジン、電卓など、あらゆるサービスと対話できるようになります。\n\n2.  **ツールの種類と実行場所**:\n    *   **クライアントツール (Client tools)**:\n        *   ユーザー定義ツールや、`bash`、`text_editor`などのAnthropicスキーマツールが含まれます。\n        *   これらのツールは**ユーザーのアプリケーション**で実行されます。\n        *   Claudeは`stop_reason: \"tool_use\"`とともに1つ以上の`tool_use`ブロックを返し、ユーザーのコードが操作を実行し、その結果を`tool_result`ブロックとしてClaudeに送り返します。\n    *   **サーバーツール (Server tools)**:\n        *   `web_search`、`code_execution`、`web_fetch`、`tool_search`などが含まれます。\n        *   これらのツールは**Anthropicのインフラストラクチャ**上で実行されます。\n        *   ユーザーは実行を直接処理することなく、結果を受け取ることができます。\n\n3.  **カスタム関数の定義**:\n    *   JSON Schemaを使用して入力パラメータを定義することで、Claudeにカスタムツール定義を与えることができます。\n    *   Claudeがツールを使用する必要があると判断すると、ツール名と入力パラメータをJSON形式で含む`tool_use`ブロックを返します。その後、アプリケーションが関数を実行し、結果を返します。\n\n4.  **情報不足への対応**:\n    *   ユーザーのプロンプトに、ツールの必須パラメータを満たすための情報が不足している場合、Claude Opusは不足しているパラメータを認識し、ユーザーに尋ねる可能性が高いです。Claude Sonnetも尋ねることがありますが、合理的な値を推測しようとすることもあります。\n\n5.  **厳密なスキーマ適合**:\n    *   ツール定義に`strict: true`を追加することで、Claudeのツール呼び出しが定義されたスキーマに厳密に一致することを保証できます。\n\n6.  **料金体系**:\n    *   ツール利用リクエストは、以下の要素に基づいて課金されます。\n        1.  モデルに送信される入力トークンの総数（`tools`パラメータを含む）。\n        2.  生成される出力トークン数。\n        3.  サーバーサイドツールの場合、追加の利用ベースの料金（例：Web検索は検索実行ごと）。\n    *   クライアントサイドツールは通常のClaude APIリクエストと同じ料金体系ですが、サーバーサイドツールは特定の利用に基づいて追加料金が発生する場合があります。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision"
+      ],
+      "category": "API機能"
+    },
+    {
+      "id": 4,
+      "question": "Claude 3 Haikuはどのような用途に適していますか？",
+      "expected_answer": "Claude 3 Haikuは、Claude 3ファミリーの中で最も高速かつ低コストなモデルです。チャットボット、リアルタイム翻訳、簡単な分類タスクなど、低レイテンシが求められるユースケースに最適です。大量のリクエストを効率的に処理する必要がある場面で活躍します。",
+      "rag_answer": "Claude 3 Haikuは、低レイテンシーを必要とするチャットボット、リアルタイム翻訳、およびシンプルな分類タスクに最適です。Claude 3ファミリーの中で最も高速で費用対効果の高いモデルです。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview"
+      ],
+      "category": "モデル比較"
+    },
+    {
+      "id": 5,
+      "question": "Claudeの安全性に関するConstitutional AIとは何ですか？",
+      "expected_answer": "Constitutional AIは、Anthropicが開発したAIの安全性を高めるための手法です。AIモデルに一連の原則（憲法）を与え、それに基づいて自己評価・自己改善を行わせることで、有害な出力を減らしつつ有用性を維持します。人間のフィードバックだけでなく、AI自身による評価プロセスを組み合わせている点が特徴です。",
+      "rag_answer": "Constitutional AI（CAI）は、Anthropicが開発した、AIシステムを有益、無害、正直に訓練するための手法です。\n\n主な特徴は以下の通りです。\n\n*   **自己改善メカニズム**: 有害な出力に対して人間がラベル付けを行うのではなく、AI自体が一連の原則（「憲法」と呼ばれる）に基づいて自身の応答を評価し、改善します。これにより、広範な人間による有害コンテンツのラベル付けの必要性を減らしながら、より良い安全性成果を達成します。\n*   **安全性の向上**: 人間からのフィードバックによる強化学習（RLHF）のみで訓練されたモデルとは異なり、Constitutional AIモデルは、特定の要求を単に拒否するだけでなく、その拒否理由を説明することができます。これにより、より有益で教育的な対話が可能になります。\n*   **Claudeの基盤**: ClaudeのコンテンツポリシーはConstitutional AIの原則に基づいて構築されており、以下の設計目標を持っています。\n    *   暴力的、違法、差別的なコンテンツの生成を拒否する。\n    *   個人情報の不適切な使用を防ぐ。\n    *   情報に関する不確実性を正直に伝える。\n    *   誤情報の拡散を抑制する。\n    *   敏感なトピックに思慮深く関与する。\n\nこのアプローチは、AIが自身の安全性と倫理的な行動を自己監督することで、人間のフィードバックのみのアプローチよりも効果的に安全トレーニングをスケールできる可能性を秘めています。",
+      "sources": [
+        "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback",
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision"
+      ],
+      "category": "安全性"
+    },
+    {
+      "id": 6,
+      "question": "Claude APIのVision（画像認識）機能はどのように使えますか？",
+      "expected_answer": "Claude 3ファミリーのモデルはマルチモーダル対応で、テキストと画像の両方を入力として受け付けます。APIリクエストのメッセージにBase64エンコードした画像やURLを含めることで、画像の説明、分析、OCR、図表の解釈などを行えます。JPEG、PNG、GIF、WebP形式に対応しています。",
+      "rag_answer": "Claude APIのVision機能は、APIリクエストに画像を含めることで利用できます。\n\n画像をAPIリクエストに含める方法は以下の通りです:\n*   **Base64エンコーディング**: 画像をbase64でエンコードして含める。\n*   **URL参照**: 画像のURLを指定して参照させる。\n*   **Files API**: Files APIを使用して画像を送信する。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "API機能"
+    },
+    {
+      "id": 7,
+      "question": "Claudeをコーディング支援に活用する方法を教えてください。",
+      "expected_answer": "Claudeはコード生成、コードレビュー、バグ修正、リファクタリング、テスト作成など幅広いコーディングタスクに活用できます。特にClaude 3.5 Sonnetはコーディング能力が高く、複雑なアルゴリズムの実装や既存コードの改善提案を行えます。また、複数のプログラミング言語に対応しており、言語間の変換も可能です。",
+      "rag_answer": "Claudeをコーディング支援に活用する方法として、コンテキストから以下の情報が得られます。\n\n*   **Claude Opus 4.6の活用**:\n    *   Claude Opus 4.6は、エージェントおよびコーディング向けに最もインテリジェントで広く利用可能なモデルです。\n    *   特に、コーディングと推論において例外的なパフォーマンスを発揮します。\n    *   どのモデルを使用すべきか不明な場合、最も複雑なコーディングタスクにはClaude Opus 4.6から検討することが推奨されています。\n\n*   **ツール利用の活用**:\n    *   基本的なツールを追加するだけでも、SWE-bench（実世界のソフトウェアエンジニアリング）のようなタスクにおいて、大幅な能力向上をもたらすことが示されています。これにより、人間エキスパートのベースラインを上回ることもあります。\n    *   Claudeのツール利用機能を使えば、外部API、データベース、検索エンジン、計算機など、あらゆるサービスと統合し、コーディングに関連する外部機能を利用できます。\n\nこれらの情報から、Claude Opus 4.6を主要なモデルとして選び、複雑なコーディングタスクに取り組むこと、また、必要に応じてツール利用機能を通じて外部システムと連携させることが、コーディング支援にClaudeを活用する方法として挙げられます。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback"
+      ],
+      "category": "活用事例"
+    },
+    {
+      "id": 8,
+      "question": "Claude APIのストリーミングレスポンスとは何ですか？",
+      "expected_answer": "ストリーミングレスポンスは、Claude APIが回答を生成しながらリアルタイムでトークンを逐次送信する機能です。Server-Sent Events（SSE）形式で応答が返され、ユーザーは完全な回答を待たずに部分的な結果を表示できます。チャットUIの応答性向上やユーザー体験の改善に役立ちます。",
+      "rag_answer": "Claude APIのストリーミングレスポンスとは、Claude APIが完全な応答を待つのではなく、生成されたトークンを段階的に配信する機能です。これにより、アプリケーションは部分的な結果をリアルタイムで表示し、応答性の認識を向上させることができます。\n\nストリーミングが有効になっている場合、APIは一連のイベント（`message_start`、`content_block_start`、`content_block_delta`、`message_delta`、`message_stop`など）を送信します。\n\nストリーミングの利点には、以下の点が含まれます。\n*   ユーザーエクスペリエンスの向上：ユーザーは完全な応答を待つことなく、リアルタイムで応答が表示されるのを確認できます。\n*   知覚されるレイテンシの低減：最初のトークンまでの時間が、完全な応答までの時間よりも大幅に短縮されます。\n*   プログレッシブレンダリング：チャットUIがテキストを段階的に表示できます。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/streaming",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback"
+      ],
+      "category": "API機能"
+    },
+    {
+      "id": 9,
+      "question": "Claudeのコンテンツポリシーについて教えてください。",
+      "expected_answer": "Claudeは有害なコンテンツの生成を防ぐために、利用ポリシーに基づいた安全ガードレールを備えています。暴力的・違法・差別的なコンテンツの生成を拒否し、個人情報の不適切な使用を防止します。また、不確実な情報については率直にその旨を伝え、誤情報の拡散を抑制するよう設計されています。",
+      "rag_answer": "Claudeのコンテンツポリシーは、Constitutional AIの原則に基づいて構築されています。Claudeは以下の目的で設計されています。\n\n*   暴力的、違法、または差別的なコンテンツの生成を拒否する\n*   個人情報の不適切な使用を防止する\n*   情報に関する不確実性を正直に伝える\n*   誤情報の拡散を抑制する\n*   機密性の高いトピックには思慮深く関わる",
+      "sources": [
+        "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "安全性"
+    },
+    {
+      "id": 10,
+      "question": "Claudeを使った文書要約のベストプラクティスは何ですか？",
+      "expected_answer": "Claudeで文書要約を行う際は、要約の目的・対象読者・希望する長さを明確に指示することが重要です。長い文書は200Kトークンのコンテキストウィンドウ内に収まるため一度に処理でき、箇条書きや段階的な要約など出力形式を指定すると精度が向上します。重要なポイントの抽出漏れを防ぐため、要約後に元文書との照合を行うことも推奨されます。",
+      "rag_answer": "コンテキストには、Claudeを使った文書要約の具体的なベストプラクティスに関する直接的な情報は見つかりませんでした。\n\nしかし、文書要約に関連するClaudeの能力やモデル選択に関する以下の情報があります。\n\n*   **長文コンテキスト処理能力**: Claude 4モデルは「長文コンテキスト処理」においてトップティアの結果を出すとされており、これは文書要約において重要な能力です。\n*   **複雑なタスクへの推奨モデル**: 「最も複雑なタスク」にはClaude Opus 4.6の使用が推奨されており、文書要約の複雑度によってはこのモデルが適している可能性があります。Claude Opus 4.6は「推論、コーディング、多言語タスク、長文コンテキスト処理、正確性、画像処理」でトップティアのパフォーマンスを発揮するとされています。\n*   **モデルの選択肢**: 文書要約のニーズに応じて、以下のモデルを検討できます。\n    *   **Claude Opus 4.6**: 最もインテリジェントで、複雑なタスクや推論、コーディングに最適なモデルです。\n    *   **Claude Sonnet 4.6**: 速度と知性のバランスが取れたモデルです。\n    *   **Claude Haiku 4.5**: 最速かつ最も費用対効果の高いモデルで、低レイテンシが求められる単純な分類タスクなどに適しています。",
+      "sources": [
+        "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "活用事例"
+    }
+  ]
+}

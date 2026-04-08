@@ -5,6 +5,8 @@ import google.generativeai as genai
 from src.config import Config
 from src.vectorstore import VectorStore
 
+DEFAULT_DISTANCE_THRESHOLD = 0.45
+
 
 @dataclass
 class RAGResponse:
@@ -13,11 +15,19 @@ class RAGResponse:
 
 
 class RAGPipeline:
-    def __init__(self, config: Config, vectorstore: VectorStore):
+    def __init__(
+        self,
+        config: Config,
+        vectorstore: VectorStore,
+        translate_query: bool = False,
+        distance_threshold: float | None = None,
+    ):
         genai.configure(api_key=config.gemini_api_key)
         self.model = genai.GenerativeModel("gemini-2.5-flash")
         self.vectorstore = vectorstore
         self.top_k = config.top_k
+        self.translate_query_enabled = translate_query
+        self.distance_threshold = distance_threshold
 
     def _translate_query(self, question: str) -> str:
         response = self.model.generate_content(
@@ -27,9 +37,18 @@ class RAGPipeline:
         )
         return response.text.strip()
 
+    def _filter_by_distance(self, results: list[dict]) -> list[dict]:
+        if self.distance_threshold is None:
+            return results
+        return [r for r in results if r["distance"] <= self.distance_threshold]
+
     def ask(self, question: str) -> RAGResponse:
-        english_query = self._translate_query(question)
-        results = self.vectorstore.search(english_query, top_k=self.top_k)
+        search_query = question
+        if self.translate_query_enabled:
+            search_query = self._translate_query(question)
+
+        results = self.vectorstore.search(search_query, top_k=self.top_k)
+        results = self._filter_by_distance(results)
 
         if not results:
             return RAGResponse(answer="関連情報が見つかりませんでした", sources=[])
@@ -37,7 +56,6 @@ class RAGPipeline:
         prompt = self._build_prompt(question, results)
         response = self.model.generate_content(prompt)
 
-        # Deduplicate source URLs while preserving order
         seen: set[str] = set()
         sources: list[str] = []
         for r in results:

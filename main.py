@@ -43,7 +43,7 @@ def cmd_ingest() -> None:
 def cmd_ask(question: str) -> None:
     config = load_config()
     vs = VectorStore(persist_dir=config.chroma_persist_dir, collection_name=config.collection_name)
-    pipeline = RAGPipeline(config, vs)
+    pipeline = RAGPipeline(config, vs, distance_threshold=config.distance_threshold)
 
     response = pipeline.ask(question)
 
@@ -57,7 +57,7 @@ def cmd_ask(question: str) -> None:
 def cmd_evaluate() -> None:
     config = load_config()
     vs = VectorStore(persist_dir=config.chroma_persist_dir, collection_name=config.collection_name)
-    pipeline = RAGPipeline(config, vs)
+    pipeline = RAGPipeline(config, vs, distance_threshold=config.distance_threshold)
 
     with open("data/qa_pairs.json") as f:
         qa_data = json.load(f)

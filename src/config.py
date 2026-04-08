@@ -9,7 +9,8 @@ class Config:
     gemini_api_key: str
     chunk_size: int = 500
     chunk_overlap: int = 100
-    top_k: int = 5
+    top_k: int = 8
+    distance_threshold: float = 0.45
     chroma_persist_dir: str = "./chroma_db"
     collection_name: str = "claude_docs"
 

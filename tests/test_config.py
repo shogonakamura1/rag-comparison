@@ -7,7 +7,7 @@ def test_config_defaults():
     assert config.gemini_api_key == "test-key"
     assert config.chunk_size == 500
     assert config.chunk_overlap == 100
-    assert config.top_k == 5
+    assert config.top_k == 8
     assert config.chroma_persist_dir == "./chroma_db"
     assert config.collection_name == "claude_docs"
 

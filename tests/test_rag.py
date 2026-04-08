@@ -45,10 +45,7 @@ class TestAsk:
         mock_vectorstore.search.return_value = sample_search_results
 
         mock_model_instance = MagicMock()
-        mock_model_instance.generate_content.side_effect = [
-            MagicMock(text="What is Claude?"),  # translation
-            MagicMock(text="Claudeは高性能なAIです。"),  # answer
-        ]
+        mock_model_instance.generate_content.return_value = MagicMock(text="Claudeは高性能なAIです。")
         mock_genai.GenerativeModel.return_value = mock_model_instance
 
         pipeline = RAGPipeline(mock_config, mock_vectorstore)
@@ -58,7 +55,7 @@ class TestAsk:
         assert response.answer == "Claudeは高性能なAIです。"
         assert "https://example.com/claude" in response.sources
         assert "https://example.com/models" in response.sources
-        mock_vectorstore.search.assert_called_once_with("What is Claude?", top_k=3)
+        mock_vectorstore.search.assert_called_once_with("Claudeとは何ですか？", top_k=3)
 
     @patch("src.rag.genai")
     def test_ask_no_results_returns_fallback(self, mock_genai, mock_config, mock_vectorstore):
@@ -92,10 +89,7 @@ class TestAsk:
         ]
 
         mock_model_instance = MagicMock()
-        mock_model_instance.generate_content.side_effect = [
-            MagicMock(text="Translated query"),  # translation
-            MagicMock(text="回答"),  # answer
-        ]
+        mock_model_instance.generate_content.return_value = MagicMock(text="回答")
         mock_genai.GenerativeModel.return_value = mock_model_instance
 
         pipeline = RAGPipeline(mock_config, mock_vectorstore)
