@@ -1,0 +1,17 @@
+[project]
+name = "rag-comparison"
+version = "0.1.0"
+description = "RAG system for Claude domain QA with Google NotebookLM comparison"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb",
+    "google-generativeai",
+    "requests",
+    "beautifulsoup4",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]

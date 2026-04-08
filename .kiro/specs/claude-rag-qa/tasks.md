@@ -3,9 +3,9 @@
 ## タスク 1: プロジェクト基盤セットアップ (P)
 対応要件: 7.1, 7.2, 7.3
 
-- [x] 1.1 Pythonプロジェクトの初期化と依存関係の定義
+- [x] ~~1.1 Pythonプロジェクトの初期化と依存関係の定義~~ ✅
   `pyproject.toml`を作成し、chromadb, google-generativeai, requests, beautifulsoup4, python-dotenvを依存関係に追加する。`requirements.txt`も合わせて作成する。
-- [x] 1.2 設定管理モジュールの作成
+- [x] ~~1.2 設定管理モジュールの作成~~ ✅
   `src/config.py`に`Config`データクラスを作成する。`.env`からGemini APIキーを読み込み、チャンクサイズ(500)、オーバーラップ(100)、top-k(5)、ChromaDB永続化パス、コレクション名をデフォルト値付きで管理する。`.env.example`と`.gitignore`も作成する。
 
 ## タスク 2: ドキュメント取得モジュール
