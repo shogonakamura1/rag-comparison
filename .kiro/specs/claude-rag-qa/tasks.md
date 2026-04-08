@@ -11,9 +11,9 @@
 ## タスク 2: ドキュメント取得モジュール
 対応要件: 1.1, 1.2, 1.3
 
-- [x] 2.1 URL単体のテキスト取得機能を実装する
+- [x] ~~2.1 URL単体のテキスト取得機能を実装する~~ ✅
   `src/loader.py`に`Document`データクラスと`fetch_url()`関数を作成する。requestsでHTMLを取得し、BeautifulSoupでscript/style/nav/footer/headerタグを除去してテキストを抽出する。タイムアウト10秒。失敗時はNone返却とログ出力。
-- [x] 2.2 ソースURL一覧からの一括取得機能を実装する
+- [x] ~~2.2 ソースURL一覧からの一括取得機能を実装する~~ ✅
   `load_sources()`関数を作成し、`data/sources.json`からURLリストを読み込んで順次処理する。アクセス不可のURLはスキップして残りを継続する。サンプルの`data/sources.json`も作成する。
 
 ## タスク 3: テキスト分割モジュール

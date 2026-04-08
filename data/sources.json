@@ -1,0 +1,6 @@
+{
+  "sources": [
+    {"url": "https://docs.anthropic.com/en/docs/about-claude/models", "name": "Claude Models"},
+    {"url": "https://docs.anthropic.com/en/docs/about-claude/use-case-guides/summarization", "name": "Claude Summarization"}
+  ]
+}
