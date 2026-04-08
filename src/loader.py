@@ -37,16 +37,32 @@ def fetch_url(url: str) -> Document | None:
         return None
 
 
+def load_local_file(path: str, source_url: str = "") -> Document | None:
+    try:
+        with open(path, encoding="utf-8") as f:
+            content = f.read()
+        title = content.split("\n", 1)[0].lstrip("# ").strip() if content else path
+        return Document(url=source_url or path, title=title, content=content)
+    except Exception as e:
+        logger.error(f"Failed to read {path}: {e}")
+        return None
+
+
 def load_sources(sources_path: str = "data/sources.json") -> list[Document]:
     with open(sources_path) as f:
         data = json.load(f)
 
     documents = []
     for source in data["sources"]:
-        doc = fetch_url(source["url"])
+        local_path = source.get("local_path")
+        if local_path:
+            doc = load_local_file(local_path, source_url=source.get("url", local_path))
+        else:
+            doc = fetch_url(source["url"])
+
         if doc:
             documents.append(doc)
         else:
-            logger.warning(f"Skipped: {source['url']}")
+            logger.warning(f"Skipped: {source.get('url') or source.get('local_path')}")
 
     return documents

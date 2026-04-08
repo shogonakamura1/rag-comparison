@@ -15,7 +15,7 @@ class RAGResponse:
 class RAGPipeline:
     def __init__(self, config: Config, vectorstore: VectorStore):
         genai.configure(api_key=config.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-2.0-flash")
+        self.model = genai.GenerativeModel("gemini-2.5-flash")
         self.vectorstore = vectorstore
         self.top_k = config.top_k
 

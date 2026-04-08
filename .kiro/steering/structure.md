@@ -18,8 +18,9 @@ rag-comparison/
 │   ├── rag.py                # RAGパイプライン
 │   └── config.py             # 設定管理
 ├── data/
-│   ├── sources.json          # ソースURL一覧
-│   └── qa_pairs.json         # Q&Aペア
+│   ├── sources.json          # ソースURL一覧（local_pathでローカルファイル参照）
+│   ├── qa_pairs.json         # Q&Aペア
+│   └── docs/                 # WebFetchで取得したソース文書（Markdown）
 ├── evaluation/
 │   ├── evaluate.py           # 評価スクリプト
 │   └── results/              # 比較結果

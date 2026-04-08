@@ -1,6 +1,29 @@
 {
   "sources": [
-    {"url": "https://docs.anthropic.com/en/docs/about-claude/models", "name": "Claude Models"},
-    {"url": "https://docs.anthropic.com/en/docs/about-claude/use-case-guides/summarization", "name": "Claude Summarization"}
+    {
+      "url": "https://platform.claude.com/docs/en/docs/about-claude/models",
+      "name": "Claude Models Overview",
+      "local_path": "data/docs/models_overview.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+      "name": "Tool Use",
+      "local_path": "data/docs/tool_use.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+      "name": "Vision",
+      "local_path": "data/docs/vision.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/streaming",
+      "name": "Streaming",
+      "local_path": "data/docs/streaming.md"
+    },
+    {
+      "url": "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback",
+      "name": "Constitutional AI",
+      "local_path": "data/docs/constitutional_ai.md"
+    }
   ]
 }

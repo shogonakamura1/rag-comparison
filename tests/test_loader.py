@@ -1,5 +1,5 @@
 from unittest.mock import patch, Mock
-from src.loader import Document, fetch_url, load_sources
+from src.loader import Document, fetch_url, load_local_file, load_sources
 
 
 def test_fetch_url_success():
@@ -87,3 +87,34 @@ def test_load_sources_skips_failed_urls(tmp_path):
 
     assert len(docs) == 1
     assert docs[0].url == "https://good.com"
+
+
+def test_load_local_file(tmp_path):
+    md_file = tmp_path / "test.md"
+    md_file.write_text("# Test Title\n\nSome content here.")
+    doc = load_local_file(str(md_file), source_url="https://example.com")
+    assert doc is not None
+    assert doc.url == "https://example.com"
+    assert doc.title == "Test Title"
+    assert "Some content here." in doc.content
+
+
+def test_load_local_file_missing():
+    doc = load_local_file("/nonexistent/path.md")
+    assert doc is None
+
+
+def test_load_sources_with_local_path(tmp_path):
+    import json
+    md_file = tmp_path / "doc.md"
+    md_file.write_text("# Local Doc\n\nLocal content.")
+    sources_file = tmp_path / "sources.json"
+    sources_file.write_text(json.dumps({
+        "sources": [
+            {"url": "https://example.com", "name": "Doc", "local_path": str(md_file)}
+        ]
+    }))
+    docs = load_sources(str(sources_file))
+    assert len(docs) == 1
+    assert docs[0].url == "https://example.com"
+    assert "Local content." in docs[0].content

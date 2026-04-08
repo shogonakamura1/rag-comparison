@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 @dataclass
 class Config:
     gemini_api_key: str
-    chunk_size: int = 500
-    chunk_overlap: int = 100
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
     top_k: int = 5
     chroma_persist_dir: str = "./chroma_db"
     collection_name: str = "claude_docs"
