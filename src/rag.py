@@ -19,8 +19,17 @@ class RAGPipeline:
         self.vectorstore = vectorstore
         self.top_k = config.top_k
 
+    def _translate_query(self, question: str) -> str:
+        response = self.model.generate_content(
+            "Translate the following question to English. "
+            "Output ONLY the translated text, nothing else.\n\n"
+            f"{question}"
+        )
+        return response.text.strip()
+
     def ask(self, question: str) -> RAGResponse:
-        results = self.vectorstore.search(question, top_k=self.top_k)
+        english_query = self._translate_query(question)
+        results = self.vectorstore.search(english_query, top_k=self.top_k)
 
         if not results:
             return RAGResponse(answer="関連情報が見つかりませんでした", sources=[])
