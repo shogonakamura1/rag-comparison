@@ -9,6 +9,7 @@ dependencies = [
     "requests",
     "beautifulsoup4",
     "python-dotenv",
+    "sentence-transformers",
 ]
 
 [project.optional-dependencies]

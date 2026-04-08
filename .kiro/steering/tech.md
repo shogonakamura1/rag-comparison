@@ -4,7 +4,8 @@
 - Python 3.11+
 
 ## 主要ライブラリ
-- **ChromaDB**: ローカルベクトルデータベース（類似検索）+ 内蔵Embedding（all-MiniLM-L6-v2）
+- **ChromaDB**: ローカルベクトルデータベース（類似検索）
+- **sentence-transformers + multilingual-e5-large**: 多言語対応Embeddingモデル（1024次元、ローカル実行）
 - **Google Generative AI SDK**: Gemini APIによるLLM回答生成
 - **BeautifulSoup4 + requests**: Webページからのテキスト抽出
 

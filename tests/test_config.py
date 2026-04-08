@@ -5,8 +5,8 @@ from src.config import Config, load_config
 def test_config_defaults():
     config = Config(gemini_api_key="test-key")
     assert config.gemini_api_key == "test-key"
-    assert config.chunk_size == 1000
-    assert config.chunk_overlap == 200
+    assert config.chunk_size == 500
+    assert config.chunk_overlap == 100
     assert config.top_k == 5
     assert config.chroma_persist_dir == "./chroma_db"
     assert config.collection_name == "claude_docs"

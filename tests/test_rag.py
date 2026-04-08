@@ -121,5 +121,5 @@ class TestBuildPrompt:
     def test_build_prompt_contains_instructions(self, mock_genai, mock_config, mock_vectorstore, sample_search_results):
         pipeline = RAGPipeline(mock_config, mock_vectorstore)
         prompt = pipeline._build_prompt("質問", sample_search_results)
-        assert "コンテキスト情報を使って質問に回答してください" in prompt
+        assert "質問に対して回答してください" in prompt
         assert "情報が見つかりませんでした" in prompt
