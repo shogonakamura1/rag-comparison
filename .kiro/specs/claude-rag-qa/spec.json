@@ -1,0 +1,24 @@
+{
+  "feature": "claude-rag-qa",
+  "description": "Claudeの機能に関するドメイン文書をURLから取得し、RAGシステムで質問応答を行い、Google NotebookLMと結果を比較するシステム",
+  "created": "2026-04-08T00:00:00Z",
+  "updated_at": "2026-04-08T00:00:00Z",
+  "language": "ja",
+  "phase": "design-generated",
+  "status": {
+    "requirements": "approved",
+    "design": "generated",
+    "tasks": "pending",
+    "implementation": "pending"
+  },
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": false
+    }
+  }
+}
