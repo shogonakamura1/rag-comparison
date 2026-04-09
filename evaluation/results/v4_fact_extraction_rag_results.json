@@ -1,0 +1,121 @@
+{
+  "results": [
+    {
+      "id": 1,
+      "question": "Claude Haiku 4.5の入力トークン100万トークン（1MTok）あたりの料金は？",
+      "expected_answer": "$1",
+      "rag_answer": "提供された資料によると、Batch APIを利用する場合、Claude Haiku 4.5の入力トークン100万トークン（1MTok）あたりの料金は$0.50です。Claude Haiku 3.5の標準入力料金とBatch API入力料金を比較すると、Batch APIの料金が標準料金の50%割引であることが示唆されています。この情報に基づくと、Claude Haiku 4.5の標準入力料金は$1.00 / MTokであると論理的に導き出されます。※ソースの記載から論理的に導いた内容です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing"
+      ],
+      "category": "料金（表参照）"
+    },
+    {
+      "id": 2,
+      "question": "Claude Opus 4.6の最大出力トークン数は？",
+      "expected_answer": "128Kトークン",
+      "rag_answer": "Claude Opus 4.6の最大出力トークン数は128Kです。以前のモデルは最大64K出力トークンをサポートしていました。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing"
+      ],
+      "category": "モデル仕様（表参照）"
+    },
+    {
+      "id": 3,
+      "question": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で「適応思考」をサポートしているモデルはどれですか？",
+      "expected_answer": "Claude Opus 4.6のみ",
+      "rag_answer": "提供された資料によると、Claude Opus 4.6（`claude-opus-4-6`）とClaude Sonnet 4.6（`claude-sonnet-4-6`）が「アダプティブ思考」をサポートしています。\n\nClaude Opus 4.6はアダプティブ思考のみを使用し、手動モードは非推奨です。Claude Sonnet 4.6は、インターリーブモードでの手動拡張思考とアダプティブ思考の両方をサポートしています。質問で挙げられているClaude Sonnet 4.5やClaude Haiku 4.5がアダプティブ思考をサポートしているという直接的な記述は、提供された資料にはありません。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "モデル仕様（行のはい/いいえ判定）"
+    },
+    {
+      "id": 4,
+      "question": "PDFサポートで1リクエストあたりの最大ページ数は？",
+      "expected_answer": "100ページ",
+      "rag_answer": "PDFサポートでは、1リクエストあたりの最大ページ数は100ページです。この制限は、PDFと共に送信される他のコンテンツを含む、リクエストペイロード全体に適用されます。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/pdf-support",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision"
+      ],
+      "category": "API制限（表参照）"
+    },
+    {
+      "id": 5,
+      "question": "Vision APIが対応している画像形式を全て挙げてください。",
+      "expected_answer": "JPEG, PNG, GIF, WebP",
+      "rag_answer": "ClaudeのVision APIは現在、JPEG、PNG、GIF、WebPの画像形式をサポートしています。具体的には、`image/jpeg`、`image/png`、`image/gif`、`image/webp`が利用可能です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/pdf-support"
+      ],
+      "category": "API機能（リスト抽出）"
+    },
+    {
+      "id": 6,
+      "question": "バッチ処理APIは標準APIに対して何%の割引が適用されますか？",
+      "expected_answer": "50%",
+      "rag_answer": "バッチ処理APIは、標準のAPI価格と比較して、すべての使用量に対して50%の割引が適用されます。この割引は、入力トークン、出力トークン、および特殊トークンに適用されます。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing"
+      ],
+      "category": "料金（テキスト抽出）"
+    },
+    {
+      "id": 7,
+      "question": "Claude Opus 4.6の1時間キャッシュ書き込み料金は1MTokあたりいくらですか？",
+      "expected_answer": "$10",
+      "rag_answer": "Claude Opus 4.6の1時間キャッシュ書き込み料金は、1MTokあたり$10です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision"
+      ],
+      "category": "料金（精密な表参照）"
+    },
+    {
+      "id": 8,
+      "question": "Claude Sonnet 4.5の信頼性の高い知識カットオフはいつですか？",
+      "expected_answer": "2025年1月",
+      "rag_answer": "Claude Sonnet 4.5の信頼性の高い知識カットオフは2025年1月です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "モデル仕様（表参照）"
+    },
+    {
+      "id": 9,
+      "question": "Claude Haiku 4.5のコンテキストウィンドウのサイズは何トークンですか？",
+      "expected_answer": "200Kトークン",
+      "rag_answer": "Claude Haiku 4.5のコンテキストウィンドウのサイズは200Kトークンです。\nこのモデルは、ベータ版として提供されている100万トークンコンテキストウィンドウには対応していません。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "モデル仕様（重要な差異）"
+    },
+    {
+      "id": 10,
+      "question": "Message Batches APIで作成したバッチの結果は何日間利用可能ですか？",
+      "expected_answer": "29日間",
+      "rag_answer": "Message Batches APIで作成したバッチの結果は、バッチ作成後29日間利用可能です。この期間を過ぎると、バッチ自体は表示できますが、結果をダウンロードすることはできません。このデータ保持期間はAnthropicのデータ保持ポリシーに従っています。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing"
+      ],
+      "category": "API制限（テキスト抽出）"
+    }
+  ]
+}
