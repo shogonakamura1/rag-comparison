@@ -24,6 +24,31 @@
       "url": "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback",
       "name": "Constitutional AI",
       "local_path": "data/docs/constitutional_ai.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+      "name": "Extended Thinking",
+      "local_path": "data/docs/extended_thinking.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+      "name": "Prompt Engineering",
+      "local_path": "data/docs/prompt_engineering.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing",
+      "name": "Batch Processing",
+      "local_path": "data/docs/batch_processing.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/build-with-claude/pdf-support",
+      "name": "PDF Support",
+      "local_path": "data/docs/pdf_support.md"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+      "name": "Pricing",
+      "local_path": "data/docs/pricing.md"
     }
   ]
 }
