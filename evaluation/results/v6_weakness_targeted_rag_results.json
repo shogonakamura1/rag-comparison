@@ -1,0 +1,122 @@
+{
+  "results": [
+    {
+      "id": 1,
+      "question": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で、1Mトークンコンテキストウィンドウ（ベータ）をサポートしないモデルはどれですか？",
+      "expected_answer": "Claude Haiku 4.5",
+      "rag_answer": "最新モデルの中で、Claude Haiku 4.5は1Mトークンコンテキストウィンドウ（ベータ）をサポートしていません。Claude Opus 4.6とClaude Sonnet 4.5は、`context-1m-2025-08-07`ベータヘッダーを使用することで1Mトークンコンテキストウィンドウをサポートします。※ソースの記載から論理的に導いた内容です",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "RAG弱点: 否定（〜しない）"
+    },
+    {
+      "id": 2,
+      "question": "models_overview.mdの最新モデル比較表で「適応思考: いいえ」となっているモデルは何個ありますか？",
+      "expected_answer": "2個",
+      "rag_answer": "提供された資料には、「models_overview.md」というファイル名の最新モデル比較表や、「適応思考: いいえ」となっているモデルの数を直接示す情報が含まれていません。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+      ],
+      "category": "RAG弱点: カウント（集計）"
+    },
+    {
+      "id": 3,
+      "question": "Claude 3 Haiku（claude-3-haiku-20240307）の入力トークン料金は1MTokあたりいくらですか？",
+      "expected_answer": "$0.25",
+      "rag_answer": "Claude 3 Haiku（claude-3-haiku-20240307）の入力トークン料金は、1MTok（100万トークン）あたり$0.25です。これは、モデルの料金に関する情報源から確認できます。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing"
+      ],
+      "category": "RAG弱点: 紛らわしい命名"
+    },
+    {
+      "id": 4,
+      "question": "pricing.mdに記載されているClaudeモデルの中で、1MTokあたりの出力トークン料金が最も安いモデルはどれですか？",
+      "expected_answer": "Claude Haiku 3（$1.25/MTok）",
+      "rag_answer": "pricing.mdに記載されているClaudeモデルの中で、1MTokあたりの出力トークン料金が最も安いのはClaude Haiku 3です。その料金は1.25ドル/MTokです。\n※ソースの記載から論理的に導いた内容です",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "RAG弱点: 順位付け・最小値探索"
+    },
+    {
+      "id": 5,
+      "question": "extended_thinking.mdの「サポートされているモデル」リストに、Claude Opus 3は含まれていますか？",
+      "expected_answer": "いいえ（含まれていません）",
+      "rag_answer": "提供された資料の「拡張思考でサポートされているモデル」リストには、Claude Opus 3は含まれていません。リストにはClaude Opus 4.6、Claude Opus 4.5、Claude Opus 4.1、Claude Opus 4などのモデルが記載されています。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "RAG弱点: 記載なしからの推論"
+    },
+    {
+      "id": 6,
+      "question": "Claude Sonnet 4.5の1時間キャッシュ書き込み料金と、Claude Haiku 4.5の1時間キャッシュ書き込み料金の差額は1MTokあたりいくらですか？",
+      "expected_answer": "$4",
+      "rag_answer": "提供された資料には、Claude Sonnet 4.5およびClaude Haiku 4.5の「1時間キャッシュ書き込み料金」という特定の情報は含まれていません。プロンプトキャッシングには5分間（デフォルト）と1時間のキャッシュ期間があるとの記載はありますが、料金表では「キャッシュ書き込み」として一種類の料金のみが提示されており、期間による区別は明記されていません。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing"
+      ],
+      "category": "RAG弱点: 複数セルの算術"
+    },
+    {
+      "id": 7,
+      "question": "構造化出力でJSON形式を指定するためのパラメータ名は何ですか？（ベータ版の古い名前ではなく、最新の正式名称を答えてください）",
+      "expected_answer": "output_config.format",
+      "rag_answer": "構造化出力でJSON形式を指定するための最新のパラメータ名は `output_config.format` です。このパラメータは、Claudeの応答を特定のJSON形式で取得するために使用されます。ベータ版で使用されていた古い`output_format`パラメータは、この`output_config.format`に移行されました。",
+      "sources": [
+        "https://platform.claude.com/docs/ja/build-with-claude/structured-outputs"
+      ],
+      "category": "RAG弱点: 古い/新しいバージョン混同"
+    },
+    {
+      "id": 8,
+      "question": "pricing.mdによると、プロンプトキャッシングの「5分キャッシュ書き込み」のトークン料金は、基本入力トークン料金の何倍ですか？",
+      "expected_answer": "1.25倍",
+      "rag_answer": "プロンプトキャッシングの「5分間キャッシュ書き込み」トークン料金は、基本入力トークン価格の1.25倍です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/pdf-support",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing"
+      ],
+      "category": "RAG弱点: 比率・乗数の特定"
+    },
+    {
+      "id": 9,
+      "question": "Claude Opus 4.6を使って、1回のAPIリクエストで200ページのPDFを処理することは可能ですか？",
+      "expected_answer": "いいえ（不可能。リクエストあたりの最大ページ数は100ページ）",
+      "rag_answer": "提供された資料によると、ClaudeでのPDFサポートにおいて、1回のAPIリクエストあたりの最大ページ数は100ページと制限されています。したがって、Claude Opus 4.6を使用して1回のAPIリクエストで200ページのPDFを処理することはできません。※ソースの記載から論理的に導いた内容です",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/pdf-support",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+      ],
+      "category": "RAG弱点: 暗黙の制約判定"
+    },
+    {
+      "id": 10,
+      "question": "現時点でClaude Opus 4.6において「非推奨」とされている拡張思考のtypeパラメータの値は何ですか？",
+      "expected_answer": "\"enabled\"",
+      "rag_answer": "現時点でClaude Opus 4.6において非推奨とされている拡張思考の`type`パラメータの値は`\"enabled\"`です。この手動思考モードの設定は将来のモデルリリースで削除される予定です。Claude Opus 4.6では、代わりに`type: \"adaptive\"`を使用するアダプティブ思考が推奨されています。また、`budget_tokens`パラメータもClaude Opus 4.6では非推奨です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+      ],
+      "category": "RAG弱点: 非推奨・現行の区別"
+    }
+  ]
+}
