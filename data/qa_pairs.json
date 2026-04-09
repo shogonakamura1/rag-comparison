@@ -2,93 +2,122 @@
   "pairs": [
     {
       "id": 1,
-      "question": "Claude Haiku 4.5の入力トークン100万トークン（1MTok）あたりの料金は？",
-      "expected_answer": "$1",
-      "source_file": "pricing.md",
-      "source_location": "モデル料金表のClaude Haiku 4.5の行、基本入力トークン列",
-      "category": "料金（表参照）",
-      "notes": "Opus 4.6の$5やSonnet 4.5の$3と混同しないかをテスト"
+      "question": "Tool Useと拡張思考を併用する場合、使用できるtool_choiceの値を全て挙げてください。",
+      "expected_answer": "\"auto\" と \"none\"",
+      "source_files": ["tool_use.md", "extended_thinking.md"],
+      "source_locations": [
+        "tool_use.md: tool_choiceの種類について",
+        "extended_thinking.md: ツール使用との拡張思考セクション「ツール選択の制限」"
+      ],
+      "category": "クロスリファレンス（制約）",
+      "notes": "extended_thinking.mdに「tool_choice: 'auto'またはtool_choice: 'none'のみサポート」と書かれている。tool_use.mdから一般的なtool_choiceの種類を理解した上で答える必要"
     },
     {
       "id": 2,
-      "question": "Claude Opus 4.6の最大出力トークン数は？",
-      "expected_answer": "128Kトークン",
-      "source_file": "models_overview.md",
-      "source_location": "最新モデルの比較表、Claude Opus 4.6の最大出力行",
-      "category": "モデル仕様（表参照）",
-      "notes": "Sonnet 4.5/Haiku 4.5の64Kトークンと混同しないかをテスト"
+      "question": "Claude Sonnet 4.5でBatch APIを使った場合の入力トークン1MTokあたりの料金は？",
+      "expected_answer": "$1.50",
+      "source_files": ["models_overview.md", "pricing.md"],
+      "source_locations": [
+        "models_overview.md: レガシーモデル表でClaude Sonnet 4.5の存在を確認",
+        "pricing.md: バッチ処理の表でSonnet 4.5の Batch input"
+      ],
+      "category": "クロスリファレンス（料金）",
+      "notes": "Sonnet 4.5の標準料金$3を見て50%引いて$1.50と推論する必要があるか、Batch表から直接$1.50を抽出する必要がある"
     },
     {
       "id": 3,
-      "question": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で「適応思考」をサポートしているモデルはどれですか？",
-      "expected_answer": "Claude Opus 4.6のみ",
-      "source_file": "models_overview.md",
-      "source_location": "最新モデルの比較表、適応思考の行（Opus 4.6: はい、Sonnet 4.5: いいえ、Haiku 4.5: いいえ）",
-      "category": "モデル仕様（行のはい/いいえ判定）",
-      "notes": "拡張思考は全モデル「はい」だが、適応思考はOpus 4.6だけが「はい」。混同しやすい"
+      "question": "Visionで画像を送る際、200kトークンのコンテキストウィンドウを持つClaudeモデルでは1リクエストあたり最大何枚まで画像を送れますか？",
+      "expected_answer": "100枚",
+      "source_files": ["vision.md", "models_overview.md"],
+      "source_locations": [
+        "vision.md: 基本と制限「APIリクエストでは最大100枚」",
+        "models_overview.md: コンテキストウィンドウが200Kのモデル一覧"
+      ],
+      "category": "クロスリファレンス（条件付き制限）",
+      "notes": "vision.mdは「200kトークンモデルでは100枚」と述べている。200kトークンのモデルがどれかをmodels_overview.mdで確認する必要"
     },
     {
       "id": 4,
-      "question": "PDFサポートで1リクエストあたりの最大ページ数は？",
-      "expected_answer": "100ページ",
-      "source_file": "pdf_support.md",
-      "source_location": "PDFの要件の表、リクエストあたりの最大ページ数の行",
-      "category": "API制限（表参照）",
-      "notes": "他の数値（32MB、1500-3000トークン等）と混同しないかをテスト"
+      "question": "Message Batches APIを使ってClaude Opus 4.6で出力10万トークンを生成した場合の料金はいくらですか？",
+      "expected_answer": "$1.25",
+      "source_files": ["batch_processing.md", "pricing.md"],
+      "source_locations": [
+        "batch_processing.md: 50%割引の説明",
+        "pricing.md: バッチ処理の表でOpus 4.6のBatch output $12.50/MTok"
+      ],
+      "category": "クロスリファレンス（計算）",
+      "notes": "Batch output $12.50/MTok × 0.1MTok = $1.25。計算が必要"
     },
     {
       "id": 5,
-      "question": "Vision APIが対応している画像形式を全て挙げてください。",
-      "expected_answer": "JPEG, PNG, GIF, WebP",
-      "source_file": "vision.md",
-      "source_location": "FAQセクション「Claudeはどの画像ファイル形式をサポートしていますか？」",
-      "category": "API機能（リスト抽出）",
-      "notes": "4つすべて挙げる必要がある"
+      "question": "PDFサポートで使える「最大リクエストサイズ」と、Vision APIでの「リクエストあたりの最大画像数を超えない場合の最大画像サイズ（API）」を比較すると、どちらが大きいですか？",
+      "expected_answer": "PDFサポートの最大リクエストサイズ（32MB）の方が、Vision APIの画像1枚あたりの最大サイズ（5MB）より大きい",
+      "source_files": ["pdf_support.md", "vision.md"],
+      "source_locations": [
+        "pdf_support.md: PDFの要件「最大リクエストサイズ 32MB」",
+        "vision.md: アップロードできる画像ファイルサイズ「API: 画像1枚あたり最大5MB」"
+      ],
+      "category": "クロスリファレンス（比較）",
+      "notes": "32MB vs 5MB の比較。両方の数値を別ファイルから取得する必要"
     },
     {
       "id": 6,
-      "question": "バッチ処理APIは標準APIに対して何%の割引が適用されますか？",
-      "expected_answer": "50%",
-      "source_file": "batch_processing.md",
-      "source_location": "Message Batches APIセクションおよび料金セクション",
-      "category": "料金（テキスト抽出）",
-      "notes": "シンプルだが文書内に明確に書かれている"
+      "question": "Claude Sonnet 4.5で1Mトークンコンテキストウィンドウを使い、入力25万トークン（Long Context料金が適用される条件）を送った場合の入力トークン1MTokあたりの料金は？",
+      "expected_answer": "$6",
+      "source_files": ["models_overview.md", "pricing.md"],
+      "source_locations": [
+        "models_overview.md: Sonnet 4.5が1Mトークン（ベータ）対応",
+        "pricing.md: ロングコンテキスト料金表「Sonnet 4.5 / 4: > 200K入力トークン → 入力 $6 / MTok」"
+      ],
+      "category": "クロスリファレンス（条件付き料金）",
+      "notes": "200K以上のリクエストで料金が変わる。標準の$3と混同しやすい"
     },
     {
       "id": 7,
-      "question": "Claude Opus 4.6の1時間キャッシュ書き込み料金は1MTokあたりいくらですか？",
-      "expected_answer": "$10",
-      "source_file": "pricing.md",
-      "source_location": "モデル料金表のClaude Opus 4.6の行、1h Cache Writes列",
-      "category": "料金（精密な表参照）",
-      "notes": "5分キャッシュの$6.25、出力の$25、入力の$5と混同しやすい。最も難しい"
+      "question": "拡張思考を有効にしたストリーミングで思考コンテンツを受信する際、ブロック終了直前に整合性を検証するために送信される特別なデルタイベントの名前は？",
+      "expected_answer": "signature_delta",
+      "source_files": ["extended_thinking.md", "streaming.md"],
+      "source_locations": [
+        "extended_thinking.md: ストリーミング思考セクション",
+        "streaming.md: 思考デルタセクション「content_block_stopイベントの直前にsignature_deltaイベントが送信される」"
+      ],
+      "category": "クロスリファレンス（仕組み）",
+      "notes": "両方のドキュメントが思考ストリーミングについて言及。signature_deltaは両方に出現"
     },
     {
       "id": 8,
-      "question": "Claude Sonnet 4.5の信頼性の高い知識カットオフはいつですか？",
-      "expected_answer": "2025年1月",
-      "source_file": "models_overview.md",
-      "source_location": "最新モデルの比較表、信頼性の高い知識カットオフの行",
-      "category": "モデル仕様（表参照）",
-      "notes": "Opus 4.6の2025年5月、Haiku 4.5の2025年2月と混同しやすい"
+      "question": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で、最大出力トークン数が64Kのモデルはどれですか？",
+      "expected_answer": "Claude Sonnet 4.5 と Claude Haiku 4.5",
+      "source_files": ["models_overview.md"],
+      "source_locations": [
+        "models_overview.md: 最新モデル比較表の最大出力行（Opus 4.6: 128K, Sonnet 4.5: 64K, Haiku 4.5: 64K）"
+      ],
+      "category": "表内の複数行参照",
+      "notes": "1ファイルだが、複数行の比較が必要。Opus 4.6だけ128Kで他は64K"
     },
     {
       "id": 9,
-      "question": "Claude Haiku 4.5のコンテキストウィンドウのサイズは何トークンですか？",
-      "expected_answer": "200Kトークン",
-      "source_file": "models_overview.md",
-      "source_location": "最新モデルの比較表、コンテキストウィンドウの行（Haiku 4.5は200Kのみ、Opus/Sonnetは200K/1M）",
-      "category": "モデル仕様（重要な差異）",
-      "notes": "Opus 4.6/Sonnet 4.5は200K/1M（ベータ）だが、Haiku 4.5は200Kのみ。混同して『1M』と答えやすい"
+      "question": "Claude Opus 4.6でツール使用をする際、tool_choiceを「auto」に設定した場合、ツール使用システムプロンプトに何トークン追加されますか？",
+      "expected_answer": "346トークン",
+      "source_files": ["tool_use.md", "pricing.md"],
+      "source_locations": [
+        "tool_use.md: 料金セクションの表（または）",
+        "pricing.md: ツール使用料金の表「Claude Opus 4.6: auto → 346 tokens」"
+      ],
+      "category": "クロスリファレンス（表参照）",
+      "notes": "両方のファイルに同じ表がある。auto/noneは346、any/toolは313で混同しやすい"
     },
     {
       "id": 10,
-      "question": "Message Batches APIで作成したバッチの結果は何日間利用可能ですか？",
-      "expected_answer": "29日間",
-      "source_file": "batch_processing.md",
-      "source_location": "バッチの制限事項セクション",
-      "category": "API制限（テキスト抽出）",
-      "notes": "24時間（バッチの有効期限）と混同しやすい"
+      "question": "拡張思考機能を使う際、Claude Opus 4.6で推奨されている思考のtypeパラメータの値と、Sonnet 4.5などの古いモデルで使用するtypeパラメータの値はそれぞれ何ですか？",
+      "expected_answer": "Opus 4.6: \"adaptive\"、古いモデル: \"enabled\"",
+      "source_files": ["extended_thinking.md", "prompt_engineering.md"],
+      "source_locations": [
+        "extended_thinking.md: 拡張思考の使い方セクション「Opus 4.6では type: 'adaptive' を推奨」「type: 'enabled' は非推奨」",
+        "prompt_engineering.md: 思考とインターリーブ思考機能のセクション"
+      ],
+      "category": "クロスリファレンス（バージョン差異）",
+      "notes": "Opus 4.6は'adaptive'推奨、'enabled'は非推奨。古いモデルでは'enabled'を使う"
     }
   ]
 }

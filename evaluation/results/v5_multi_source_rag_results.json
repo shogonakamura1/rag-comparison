@@ -1,0 +1,123 @@
+{
+  "results": [
+    {
+      "id": 1,
+      "question": "Tool Useと拡張思考を併用する場合、使用できるtool_choiceの値を全て挙げてください。",
+      "expected_answer": "\"auto\" と \"none\"",
+      "rag_answer": "Tool Useと拡張思考を併用する場合、`tool_choice`には`{\"type\": \"auto\"}`（デフォルト）または`{\"type\": \"none\"}`の値のみを使用できます。`{\"type\": \"any\"}`や`{\"type\": \"tool\", \"name\": \"...\"}`を使用するとエラーになります。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+      ],
+      "category": "クロスリファレンス（制約）"
+    },
+    {
+      "id": 2,
+      "question": "Claude Sonnet 4.5でBatch APIを使った場合の入力トークン1MTokあたりの料金は？",
+      "expected_answer": "$1.50",
+      "rag_answer": "Claude Sonnet 4.5でBatch APIを使用した場合、入力トークン1M（100万）あたり$1.50の料金がかかります。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "クロスリファレンス（料金）"
+    },
+    {
+      "id": 3,
+      "question": "Visionで画像を送る際、200kトークンのコンテキストウィンドウを持つClaudeモデルでは1リクエストあたり最大何枚まで画像を送れますか？",
+      "expected_answer": "100枚",
+      "rag_answer": "ClaudeモデルのAPIリクエストでは、1リクエストあたり最大100枚の画像を送信できます。\n\nただし、画像もトークン使用量にカウントされるため、個々の画像のサイズによって消費されるトークン数は異なります。そのため、200kトークンのコンテキストウィンドウ内では、画像のトークン消費量によっては送信できる画像の枚数が100枚より少なくなる可能性があります。※ソースの記載から論理的に導いた内容です",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/ja/build-with-claude/structured-outputs"
+      ],
+      "category": "クロスリファレンス（条件付き制限）"
+    },
+    {
+      "id": 4,
+      "question": "Message Batches APIを使ってClaude Opus 4.6で出力10万トークンを生成した場合の料金はいくらですか？",
+      "expected_answer": "$1.25",
+      "rag_answer": "Message Batches APIを使用してClaude Opus 4.6で10万出力トークンを生成する場合、料金は12.50ドル/メガトークンとなります。したがって、10万トークン（0.1メガトークン）の場合の料金は1.25ドルです。※ソースの記載から論理的に導いた内容です",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "クロスリファレンス（計算）"
+    },
+    {
+      "id": 5,
+      "question": "PDFサポートで使える「最大リクエストサイズ」と、Vision APIでの「リクエストあたりの最大画像数を超えない場合の最大画像サイズ（API）」を比較すると、どちらが大きいですか？",
+      "expected_answer": "PDFサポートの最大リクエストサイズ（32MB）の方が、Vision APIの画像1枚あたりの最大サイズ（5MB）より大きい",
+      "rag_answer": "PDFサポートにおける「最大リクエストサイズ」は32MBです。一方、Vision APIでの1画像あたりの最大ファイルサイズ（API）は5MBです。\n\nしたがって、PDFサポートの最大リクエストサイズ（32MB）の方が、Vision APIにおける1画像あたりの最大ファイルサイズ（5MB）よりも大きいです。※ソースの記載から論理的に導いた内容です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/vision",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/pdf-support",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/batch-processing"
+      ],
+      "category": "クロスリファレンス（比較）"
+    },
+    {
+      "id": 6,
+      "question": "Claude Sonnet 4.5で1Mトークンコンテキストウィンドウを使い、入力25万トークン（Long Context料金が適用される条件）を送った場合の入力トークン1MTokあたりの料金は？",
+      "expected_answer": "$6",
+      "rag_answer": "Claude Sonnet 4.5で1Mトークンコンテキストウィンドウを使用し、入力が200Kトークンを超える場合、ロングコンテキスト料金が適用されます。25万トークンは200Kトークンを超えるため、プレミアムロングコンテキスト料金の対象となります。この条件での入力トークン1MTokあたりの料金は$6です。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/about-claude/models"
+      ],
+      "category": "クロスリファレンス（条件付き料金）"
+    },
+    {
+      "id": 7,
+      "question": "拡張思考を有効にしたストリーミングで思考コンテンツを受信する際、ブロック終了直前に整合性を検証するために送信される特別なデルタイベントの名前は？",
+      "expected_answer": "signature_delta",
+      "rag_answer": "拡張思考を有効にしたストリーミングで思考コンテンツを受信する際、ブロック終了直前（`content_block_stop`イベントの直前）に、思考ブロックの整合性を検証するために特別な`signature_delta`イベントが送信されます。この`signature_delta`は`content_block_delta`イベント内に含まれて提供されます。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/streaming"
+      ],
+      "category": "クロスリファレンス（仕組み）"
+    },
+    {
+      "id": 8,
+      "question": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で、最大出力トークン数が64Kのモデルはどれですか？",
+      "expected_answer": "Claude Sonnet 4.5 と Claude Haiku 4.5",
+      "rag_answer": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で、最大出力トークン数が64Kのモデルは、Claude Sonnet 4.5とClaude Haiku 4.5です。Claude Opus 4.6の最大出力トークン数は128Kトークンです。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/models",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing"
+      ],
+      "category": "表内の複数行参照"
+    },
+    {
+      "id": 9,
+      "question": "Claude Opus 4.6でツール使用をする際、tool_choiceを「auto」に設定した場合、ツール使用システムプロンプトに何トークン追加されますか？",
+      "expected_answer": "346トークン",
+      "rag_answer": "Claude Opus 4.6モデルで`tool_choice`を「auto」に設定した場合、ツール使用システムプロンプトには346トークンが追加されます。これらのトークン数は、通常の入力トークンと出力トークンに加算され、リクエストの総コストに影響します。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/about-claude/pricing",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/tool-use/overview",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "クロスリファレンス（表参照）"
+    },
+    {
+      "id": 10,
+      "question": "拡張思考機能を使う際、Claude Opus 4.6で推奨されている思考のtypeパラメータの値と、Sonnet 4.5などの古いモデルで使用するtypeパラメータの値はそれぞれ何ですか？",
+      "expected_answer": "Opus 4.6: \"adaptive\"、古いモデル: \"enabled\"",
+      "rag_answer": "拡張思考機能を使用する際、Claude Opus 4.6では`thinking: {type: \"adaptive\"}`が推奨されています。これはClaudeがいつ、どの程度思考するかを動的に決定するアダプティブ思考を使用します。\n\n一方、Claude Opus 4.6以外の古いモデルでは、`thinking`オブジェクトを追加し、`type`パラメータを`enabled`に設定し、`budget_tokens`で思考用のトークン予算を指定する方法が基本的な使用方法として説明されています。",
+      "sources": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+        "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking"
+      ],
+      "category": "クロスリファレンス（バージョン差異）"
+    }
+  ]
+}
