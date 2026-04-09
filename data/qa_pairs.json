@@ -2,63 +2,93 @@
   "pairs": [
     {
       "id": 1,
-      "question": "Claude 3.5 Sonnetの特徴は何ですか？",
-      "expected_answer": "Claude 3.5 Sonnetは、高い知能と高速な応答速度のバランスが取れたモデルです。コーディング、データ分析、テキスト生成などの幅広いタスクに適しており、コストパフォーマンスに優れています。",
-      "category": "モデル比較"
+      "question": "Claude Haiku 4.5の入力トークン100万トークン（1MTok）あたりの料金は？",
+      "expected_answer": "$1",
+      "source_file": "pricing.md",
+      "source_location": "モデル料金表のClaude Haiku 4.5の行、基本入力トークン列",
+      "category": "料金（表参照）",
+      "notes": "Opus 4.6の$5やSonnet 4.5の$3と混同しないかをテスト"
     },
     {
       "id": 2,
-      "question": "Claude 3 Opusのコンテキストウィンドウのサイズはどのくらいですか？",
-      "expected_answer": "Claude 3 Opusのコンテキストウィンドウは200Kトークンです。これにより、長い文書や複数のファイルを一度に処理することが可能で、大規模なコードベースの分析や長文の要約に適しています。",
-      "category": "基本仕様"
+      "question": "Claude Opus 4.6の最大出力トークン数は？",
+      "expected_answer": "128Kトークン",
+      "source_file": "models_overview.md",
+      "source_location": "最新モデルの比較表、Claude Opus 4.6の最大出力行",
+      "category": "モデル仕様（表参照）",
+      "notes": "Sonnet 4.5/Haiku 4.5の64Kトークンと混同しないかをテスト"
     },
     {
       "id": 3,
-      "question": "Claude APIのTool Use（関数呼び出し）機能について説明してください。",
-      "expected_answer": "Claude APIのTool Use機能は、外部ツールや関数の定義をモデルに渡すことで、モデルが適切なタイミングでツールの呼び出しを要求できる仕組みです。JSON Schemaで入力パラメータを定義し、モデルが構造化されたJSON形式でツール呼び出しを返します。検索、計算、API連携など様々な外部機能との統合が可能です。",
-      "category": "API機能"
+      "question": "最新モデル（Opus 4.6、Sonnet 4.5、Haiku 4.5）の中で「適応思考」をサポートしているモデルはどれですか？",
+      "expected_answer": "Claude Opus 4.6のみ",
+      "source_file": "models_overview.md",
+      "source_location": "最新モデルの比較表、適応思考の行（Opus 4.6: はい、Sonnet 4.5: いいえ、Haiku 4.5: いいえ）",
+      "category": "モデル仕様（行のはい/いいえ判定）",
+      "notes": "拡張思考は全モデル「はい」だが、適応思考はOpus 4.6だけが「はい」。混同しやすい"
     },
     {
       "id": 4,
-      "question": "Claude 3 Haikuはどのような用途に適していますか？",
-      "expected_answer": "Claude 3 Haikuは、Claude 3ファミリーの中で最も高速かつ低コストなモデルです。チャットボット、リアルタイム翻訳、簡単な分類タスクなど、低レイテンシが求められるユースケースに最適です。大量のリクエストを効率的に処理する必要がある場面で活躍します。",
-      "category": "モデル比較"
+      "question": "PDFサポートで1リクエストあたりの最大ページ数は？",
+      "expected_answer": "100ページ",
+      "source_file": "pdf_support.md",
+      "source_location": "PDFの要件の表、リクエストあたりの最大ページ数の行",
+      "category": "API制限（表参照）",
+      "notes": "他の数値（32MB、1500-3000トークン等）と混同しないかをテスト"
     },
     {
       "id": 5,
-      "question": "Claudeの構造化出力機能とは何ですか？",
-      "expected_answer": "（模範回答は後で更新予定）",
-      "category": "API機能"
+      "question": "Vision APIが対応している画像形式を全て挙げてください。",
+      "expected_answer": "JPEG, PNG, GIF, WebP",
+      "source_file": "vision.md",
+      "source_location": "FAQセクション「Claudeはどの画像ファイル形式をサポートしていますか？」",
+      "category": "API機能（リスト抽出）",
+      "notes": "4つすべて挙げる必要がある"
     },
     {
       "id": 6,
-      "question": "Claude APIのVision（画像認識）機能はどのように使えますか？",
-      "expected_answer": "Claude 3ファミリーのモデルはマルチモーダル対応で、テキストと画像の両方を入力として受け付けます。APIリクエストのメッセージにBase64エンコードした画像やURLを含めることで、画像の説明、分析、OCR、図表の解釈などを行えます。JPEG、PNG、GIF、WebP形式に対応しています。",
-      "category": "API機能"
+      "question": "バッチ処理APIは標準APIに対して何%の割引が適用されますか？",
+      "expected_answer": "50%",
+      "source_file": "batch_processing.md",
+      "source_location": "Message Batches APIセクションおよび料金セクション",
+      "category": "料金（テキスト抽出）",
+      "notes": "シンプルだが文書内に明確に書かれている"
     },
     {
       "id": 7,
-      "question": "Claudeをコーディング支援に活用する方法を教えてください。",
-      "expected_answer": "Claudeはコード生成、コードレビュー、バグ修正、リファクタリング、テスト作成など幅広いコーディングタスクに活用できます。特にClaude 3.5 Sonnetはコーディング能力が高く、複雑なアルゴリズムの実装や既存コードの改善提案を行えます。また、複数のプログラミング言語に対応しており、言語間の変換も可能です。",
-      "category": "活用事例"
+      "question": "Claude Opus 4.6の1時間キャッシュ書き込み料金は1MTokあたりいくらですか？",
+      "expected_answer": "$10",
+      "source_file": "pricing.md",
+      "source_location": "モデル料金表のClaude Opus 4.6の行、1h Cache Writes列",
+      "category": "料金（精密な表参照）",
+      "notes": "5分キャッシュの$6.25、出力の$25、入力の$5と混同しやすい。最も難しい"
     },
     {
       "id": 8,
-      "question": "Claude APIのストリーミングレスポンスとは何ですか？",
-      "expected_answer": "ストリーミングレスポンスは、Claude APIが回答を生成しながらリアルタイムでトークンを逐次送信する機能です。Server-Sent Events（SSE）形式で応答が返され、ユーザーは完全な回答を待たずに部分的な結果を表示できます。チャットUIの応答性向上やユーザー体験の改善に役立ちます。",
-      "category": "API機能"
+      "question": "Claude Sonnet 4.5の信頼性の高い知識カットオフはいつですか？",
+      "expected_answer": "2025年1月",
+      "source_file": "models_overview.md",
+      "source_location": "最新モデルの比較表、信頼性の高い知識カットオフの行",
+      "category": "モデル仕様（表参照）",
+      "notes": "Opus 4.6の2025年5月、Haiku 4.5の2025年2月と混同しやすい"
     },
     {
       "id": 9,
-      "question": "厳格なツール使用（strict tool use）はどのような利点がありますか？",
-      "expected_answer": "（模範回答は後で更新予定）",
-      "category": "API機能"
+      "question": "Claude Haiku 4.5のコンテキストウィンドウのサイズは何トークンですか？",
+      "expected_answer": "200Kトークン",
+      "source_file": "models_overview.md",
+      "source_location": "最新モデルの比較表、コンテキストウィンドウの行（Haiku 4.5は200Kのみ、Opus/Sonnetは200K/1M）",
+      "category": "モデル仕様（重要な差異）",
+      "notes": "Opus 4.6/Sonnet 4.5は200K/1M（ベータ）だが、Haiku 4.5は200Kのみ。混同して『1M』と答えやすい"
     },
     {
       "id": 10,
-      "question": "Claudeを使った文書要約のベストプラクティスは何ですか？",
-      "expected_answer": "Claudeで文書要約を行う際は、要約の目的・対象読者・希望する長さを明確に指示することが重要です。長い文書は200Kトークンのコンテキストウィンドウ内に収まるため一度に処理でき、箇条書きや段階的な要約など出力形式を指定すると精度が向上します。重要なポイントの抽出漏れを防ぐため、要約後に元文書との照合を行うことも推奨されます。",
-      "category": "活用事例"
+      "question": "Message Batches APIで作成したバッチの結果は何日間利用可能ですか？",
+      "expected_answer": "29日間",
+      "source_file": "batch_processing.md",
+      "source_location": "バッチの制限事項セクション",
+      "category": "API制限（テキスト抽出）",
+      "notes": "24時間（バッチの有効期限）と混同しやすい"
     }
   ]
 }
