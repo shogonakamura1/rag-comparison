@@ -1,34 +1,304 @@
-# Extended Thinking
+# 拡張思考を使った構築
 
-Extended thinking gives Claude enhanced reasoning capabilities for complex tasks with transparency into its step-by-step thought process before delivering final answers.
+---
 
-## Key Features
-- Claude creates thinking content blocks with internal reasoning
-- API responses include thinking blocks followed by text blocks
-- Compatible with all Claude models with model-specific behaviors
+拡張思考は、Claudeに複雑なタスクに対する強化された推論能力を提供し、最終的な回答を提供する前のステップバイステップの思考プロセスに対してさまざまなレベルの透明性を提供します。
 
-## Supported Models
-- Claude Mythos Preview: Uses adaptive thinking by default
-- Claude Opus 4.6 & Claude Sonnet 4.6: Adaptive thinking recommended; manual mode deprecated
-- All other Claude models: Extended thinking supported
+Claude Opus 4.6では、このページで説明されている手動思考モードの代わりに、[アダプティブ思考](/docs/ja/build-with-claude/adaptive-thinking)（`thinking: {type: "adaptive"}`）と[effortパラメータ](/docs/ja/build-with-claude/effort)の使用を推奨します。手動の`thinking: {type: "enabled", budget_tokens: N}`設定はOpus 4.6では非推奨であり、将来のモデルリリースで削除される予定です。
 
-## How to Enable
-Add a thinking object to your API request with type set to "enabled" and budget_tokens specifying maximum tokens for internal reasoning (must be less than max_tokens). For Opus 4.6/Sonnet 4.6, use type "adaptive" instead.
+## サポートされているモデル
 
-## Summarized Thinking
-For Claude 4 models, thinking is summarized by default. You are charged for full thinking tokens generated, not the summary. The display field controls thinking visibility: "summarized" returns summarized thinking (default), "omitted" returns empty thinking field with encrypted signature for faster streaming.
+拡張思考は以下のモデルでサポートされています:
 
-## Extended Thinking with Tool Use
-Extended thinking works alongside tool use with limitations: only supports tool_choice auto or none, and thinking blocks must be preserved when passing tool results back.
+- Claude Opus 4.6（`claude-opus-4-6`）— [アダプティブ思考](/docs/ja/build-with-claude/adaptive-thinking)のみ；手動モード（`type: "enabled"`）は非推奨
+- Claude Opus 4.5（`claude-opus-4-5-20251101`）
+- Claude Opus 4.1（`claude-opus-4-1-20250805`）
+- Claude Opus 4（`claude-opus-4-20250514`）
+- Claude Sonnet 4.6（`claude-sonnet-4-6`）— [インターリーブモード](#interleaved-thinking)での手動拡張思考と[アダプティブ思考](/docs/ja/build-with-claude/adaptive-thinking)の両方をサポート
+- Claude Sonnet 4.5（`claude-sonnet-4-5-20250929`）
+- Claude Sonnet 4（`claude-sonnet-4-20250514`）
+- Claude Sonnet 3.7（`claude-3-7-sonnet-20250219`）（[非推奨](/docs/ja/about-claude/model-deprecations)）
+- Claude Haiku 4.5（`claude-haiku-4-5-20251001`）
 
-## Interleaved Thinking
-With tool use, Claude can think between tool calls. Claude Opus 4.6 uses adaptive thinking for automatic interleaved thinking. With interleaved thinking, budget_tokens can exceed max_tokens.
+APIの動作はClaude Sonnet 3.7とClaude 4モデル間で異なりますが、APIの形状はまったく同じです。
 
-## Key Limitations
-1. Cannot toggle thinking mid-turn during tool use loops
-2. Tool choice limited to "auto" or "none"
-3. Thinking blocks must be preserved when continuing conversations with tools
-4. budget_tokens deprecated on Opus 4.6/Sonnet 4.6 (use adaptive thinking instead)
+## 拡張思考の仕組み
 
-## Costs
-Charged for full thinking tokens (not summaries). Summarized output incurs overhead from summarization model. Omitted display reduces latency, not cost.
+拡張思考がオンになると、Claudeは内部推論を出力する`thinking`コンテンツブロックを作成します。Claudeはこの推論からの洞察を取り入れてから最終的な応答を作成します。
+
+APIレスポンスには`thinking`コンテンツブロックが含まれ、その後に`text`コンテンツブロックが続きます。
+
+## 拡張思考の使い方
+
+拡張思考をオンにするには、`thinking`オブジェクトを追加し、`type`パラメータを`enabled`に設定し、`budget_tokens`を拡張思考用の指定トークン予算に設定します。Claude Opus 4.6では、代わりに`type: "adaptive"`の使用を推奨します。`type: "enabled"`と`budget_tokens`はOpus 4.6でまだサポートされていますが、非推奨であり将来のリリースで削除される予定です。
+
+`budget_tokens`パラメータは、Claudeが内部推論プロセスに使用できるトークンの最大数を決定します。Claude 4以降のモデルでは、この制限は完全な思考トークンに適用され、[要約された出力](#summarized-thinking)には適用されません。より大きな予算は、複雑な問題に対してより徹底的な分析を可能にすることでレスポンスの品質を向上させることができますが、特に32kを超える範囲では、Claudeは割り当てられた予算全体を使用しない場合があります。
+
+`budget_tokens`はClaude Opus 4.6では非推奨であり、将来のモデルリリースで削除される予定です。思考の深さを制御するには、[アダプティブ思考](/docs/ja/build-with-claude/adaptive-thinking)と[effortパラメータ](/docs/ja/build-with-claude/effort)の使用を推奨します。
+
+Claude Opus 4.6は最大128K出力トークンをサポートしています。以前のモデルは最大64K出力トークンをサポートしています。
+
+`budget_tokens`は`max_tokens`より小さい値に設定する必要があります。ただし、[ツールとのインターリーブ思考](#interleaved-thinking)を使用する場合、トークン制限がコンテキストウィンドウ全体（200kトークン）になるため、この制限を超えることができます。
+
+### 要約された思考
+
+拡張思考を有効にすると、Claude 4モデルのMessages APIはClaudeの完全な思考プロセスの要約を返します。要約された思考は、拡張思考の完全な知能の利点を提供しながら、誤用を防ぎます。これは、思考設定の`display`フィールドが未設定または`"summarized"`に設定されている場合の、Claude 4モデルのデフォルトの動作です。[Claude Mythos Preview](https://anthropic.com/glasswing)では、`display`は代わりに`"omitted"`にデフォルト設定されるため、要約された思考を受け取るには`display: "summarized"`を明示的に設定する必要があります。
+
+要約された思考に関する重要な考慮事項:
+
+- サマリトークンではなく、元のリクエストによって生成された完全な思考トークンに対して課金されます。
+- 課金される出力トークン数は、レスポンスに表示されるトークン数と**一致しません**。
+- Claude 4モデルでは、思考出力の最初の数行がより詳細であり、プロンプトエンジニアリングの目的に特に役立つ詳細な推論を提供します。[Claude Mythos Preview](https://anthropic.com/glasswing)は最初のトークンから要約するため、その思考ブロックにはこの詳細な序文が表示されません。
+- Anthropicが拡張思考機能の改善を目指しているため、要約の動作は変更される可能性があります。
+- 要約はClaudeの思考プロセスの重要なアイデアを最小限の追加レイテンシで保持し、ストリーミング可能なユーザー体験とClaude Sonnet 3.7からClaude 4以降のモデルへの簡単な移行を可能にします。
+- 要約は、リクエストでターゲットにしているモデルとは異なるモデルによって処理されます。思考モデルは要約された出力を見ることはありません。
+
+Claude Sonnet 3.7は引き続き完全な思考出力を返します。
+
+### ストリーミング思考
+
+[サーバー送信イベント（SSE）](https://developer.mozilla.org/en-US/Web/API/Server-sent_events/Using_server-sent_events)を使用して拡張思考のレスポンスをストリーミングできます。
+
+拡張思考でストリーミングが有効になっている場合、`thinking_delta`イベントを通じて思考コンテンツを受信します。
+
+思考を有効にしたストリーミングを使用する場合、テキストが大きなチャンクで到着し、小さなトークン単位の配信と交互になることがあります。これは特に思考コンテンツで予想される動作です。
+
+ストリーミングシステムは最適なパフォーマンスのためにコンテンツをバッチで処理する必要があり、ストリーミングイベント間に遅延が生じる可能性のある「チャンク」配信パターンになることがあります。
+
+## ツール使用との拡張思考
+
+拡張思考は[ツール使用](/docs/ja/agents-and-tools/tool-use/overview)と併用でき、Claudeがツールの選択と結果の処理を推論できるようになります。
+
+ツール使用と拡張思考を使用する場合、以下の制限に注意してください:
+
+1. **ツール選択の制限**: 思考付きツール使用は`tool_choice: {"type": "auto"}`（デフォルト）または`tool_choice: {"type": "none"}`のみをサポートします。`tool_choice: {"type": "any"}`または`tool_choice: {"type": "tool", "name": "..."}`を使用するとエラーになります。
+
+2. **思考ブロックの保持**: ツール使用中、最後のアシスタントメッセージの`thinking`ブロックをAPIに返す必要があります。推論の継続性を維持するために、完全な未変更のブロックをAPIに含めてください。
+
+### 会話中の思考モードの切り替え
+
+ツール使用ループ中を含め、アシスタントターンの途中で思考を切り替えることはできません。アシスタントターン全体が単一の思考モードで動作する必要があります:
+
+- **思考が有効な場合**、最後のアシスタントターンは思考ブロックで始まる必要があります。
+- **思考が無効な場合**、最後のアシスタントターンには思考ブロックが含まれてはいけません。
+
+モデルの観点から、**ツール使用ループはアシスタントターンの一部です**。アシスタントターンは、Claudeが完全なレスポンスを完了するまで完了しません。これには複数のツール呼び出しと結果が含まれる場合があります。
+
+#### 思考のグレースフルデグラデーション
+
+ターン途中の思考の競合が発生した場合、APIはそのリクエストの思考を自動的に無効にします。モデルの品質を維持し、分布内に留まるために、APIは以下を行う場合があります:
+
+- 無効なターン構造を作成する場合、会話から思考ブロックを削除する
+- 会話履歴が思考の有効化と互換性がない場合、現在のリクエストの思考を無効にする
+
+これは、ターン途中で思考を切り替えようとしてもエラーは発生しませんが、そのリクエストでは思考が静かに無効になることを意味します。
+
+#### 実践的なガイダンス
+
+**ベストプラクティス**: ターン途中で切り替えようとするのではなく、各ターンの開始時に思考戦略を計画してください。思考を切り替える前にアシスタントターンを完了することで、新しいリクエストで思考が実際に有効になることを確認できます。
+
+### 思考ブロックの保持
+
+ツール使用中、`thinking`ブロックをAPIに返す必要があり、完全な未変更のブロックをAPIに含める必要があります。これはモデルの推論フローと会話の整合性を維持するために重要です。
+
+以前の`assistant`ロールのターンから`thinking`ブロックを省略することは可能ですが、マルチターン会話ではすべての思考ブロックを常にAPIに返すことをお勧めします。APIは以下を行います:
+- 提供された思考ブロックを自動的にフィルタリングする
+- モデルの推論を保持するために必要な関連する思考ブロックを使用する
+- Claudeに表示されるブロックの入力トークンのみを課金する
+
+Claudeがツールを呼び出す際、外部情報を待つためにレスポンスの構築を一時停止しています。ツール結果が返されると、Claudeはその既存のレスポンスの構築を続けます。これにより、いくつかの理由からツール使用中に思考ブロックを保持する必要があります:
+
+1. **推論の継続性**: 思考ブロックは、ツールリクエストに至ったClaudeのステップバイステップの推論をキャプチャします。ツール結果を投稿する際、元の思考を含めることで、Claudeは中断したところから推論を続けることができます。
+
+2. **コンテキストの維持**: ツール結果はAPI構造ではユーザーメッセージとして表示されますが、連続した推論フローの一部です。思考ブロックを保持することで、複数のAPI呼び出しにわたってこの概念的なフローが維持されます。
+
+**重要**: `thinking`ブロックを提供する場合、連続する`thinking`ブロックのシーケンス全体が、元のリクエスト中にモデルが生成した出力と一致する必要があります。これらのブロックのシーケンスを並べ替えたり変更したりすることはできません。
+
+### インターリーブ思考
+
+Claude 4モデルでのツール使用との拡張思考はインターリーブ思考をサポートしており、Claudeがツール呼び出し間で思考し、ツール結果を受信した後により洗練された推論を行うことができます。
+
+インターリーブ思考により、Claudeは以下が可能になります:
+- ツール呼び出しの結果について推論してから次のアクションを決定する
+- 間に推論ステップを挟んで複数のツール呼び出しを連鎖させる
+- 中間結果に基づいてより微妙な判断を下す
+
+**モデルサポート:**
+
+- **Claude Opus 4.6**: [アダプティブ思考](/docs/ja/build-with-claude/adaptive-thinking)を使用する場合、インターリーブ思考は自動的に有効になります — ベータヘッダーは不要です。`interleaved-thinking-2025-05-14`ベータヘッダーはOpus 4.6では**非推奨**であり、含まれていても安全に無視されます。
+- **Claude Sonnet 4.6**: 手動拡張思考（`thinking: {type: "enabled"}`）で`interleaved-thinking-2025-05-14`ベータヘッダーをサポートします。[アダプティブ思考](/docs/ja/build-with-claude/adaptive-thinking)も使用でき、インターリーブ思考が自動的に有効になります。
+- **その他のClaude 4モデル**（Opus 4.5、Opus 4.1、Opus 4、Sonnet 4.5、Sonnet 4）: APIリクエストに[ベータヘッダー](/docs/ja/api/beta-headers) `interleaved-thinking-2025-05-14`を追加してインターリーブ思考を有効にします。
+
+インターリーブ思考に関するいくつかの重要な考慮事項:
+- インターリーブ思考では、`budget_tokens`は`max_tokens`パラメータを超えることができます。これは1つのアシスタントターン内のすべての思考ブロックにわたる合計予算を表すためです。
+- インターリーブ思考は[Messages APIを介して使用されるツール](/docs/ja/agents-and-tools/tool-use/overview)でのみサポートされています。
+- Claude APIへの直接呼び出しでは、任意のモデルへのリクエストで`interleaved-thinking-2025-05-14`を渡すことができ、効果はありません（Opus 4.6を除く）。
+- サードパーティプラットフォーム（例: [Amazon Bedrock](/docs/ja/build-with-claude/claude-on-amazon-bedrock)や[Vertex AI](/docs/ja/build-with-claude/claude-on-vertex-ai)）では、Claude Sonnet 4.6、Claude Opus 4.5、Claude Opus 4.1、Opus 4、Sonnet 4.5、またはSonnet 4以外のモデルに`interleaved-thinking-2025-05-14`を渡すと、リクエストは失敗します。
+
+## プロンプトキャッシュとの拡張思考
+
+[プロンプトキャッシュ](/docs/ja/build-with-claude/prompt-caching)と思考にはいくつかの重要な考慮事項があります:
+
+拡張思考タスクは完了までに5分以上かかることがよくあります。長い思考セッションやマルチステップワークフローにわたってキャッシュヒットを維持するために、[1時間キャッシュ期間](/docs/ja/build-with-claude/prompt-caching#1-hour-cache-duration)の使用を検討してください。
+
+**思考ブロックのコンテキスト削除**
+
+- 以前のターンの思考ブロックはコンテキストから削除され、キャッシュブレークポイントに影響を与える可能性があります
+- ツール使用で会話を続ける場合、思考ブロックはキャッシュされ、キャッシュから読み取られる際に入力トークンとしてカウントされます
+- これはトレードオフを生み出します: 思考ブロックは視覚的にはコンテキストウィンドウスペースを消費しませんが、キャッシュされた場合は入力トークン使用量にカウントされます
+- 思考が無効になり、現在のツール使用ターンで思考コンテンツを渡した場合、思考コンテンツは削除され、そのリクエストでは思考は無効のままになります
+
+**キャッシュ無効化パターン**
+
+- 思考パラメータの変更（有効/無効または予算割り当て）はメッセージキャッシュブレークポイントを無効にします
+- [インターリーブ思考](#interleaved-thinking)はキャッシュ無効化を増幅します。思考ブロックが複数の[ツール呼び出し](#extended-thinking-with-tool-use)間で発生する可能性があるためです
+- システムプロンプトとツールは、思考パラメータの変更やブロックの削除にもかかわらずキャッシュされたままです
+
+### 思考ブロックのキャッシュ動作の理解
+
+拡張思考をツール使用と組み合わせて使用する場合、思考ブロックにはトークンカウントに影響する特定のキャッシュ動作があります:
+
+**仕組み:**
+
+1. キャッシュは、ツール結果を含む後続のリクエストを行った場合にのみ発生します
+2. 後続のリクエストが行われると、以前の会話履歴（思考ブロックを含む）がキャッシュされる可能性があります
+3. これらのキャッシュされた思考ブロックは、キャッシュから読み取られる際に使用量メトリクスで入力トークンとしてカウントされます
+4. ツール結果以外のユーザーブロックが含まれると、以前のすべての思考ブロックは無視され、コンテキストから除去されます
+
+**重要なポイント:**
+- このキャッシュ動作は、明示的な`cache_control`マーカーがなくても自動的に発生します
+- この動作は、通常の思考を使用する場合でもインターリーブ思考を使用する場合でも一貫しています
+
+## 拡張思考における最大トークンとコンテキストウィンドウサイズ
+
+古いClaudeモデル（Claude Sonnet 3.7より前）では、プロンプトトークンと`max_tokens`の合計がモデルのコンテキストウィンドウを超えた場合、システムはコンテキスト制限内に収まるように`max_tokens`を自動的に調整していました。これは、大きな`max_tokens`値を設定しても、システムが必要に応じて暗黙的に削減することを意味していました。
+
+Claude 3.7および4モデルでは、`max_tokens`（思考が有効な場合は思考バジェットを含む）は厳密な制限として適用されます。プロンプトトークン + `max_tokens`がコンテキストウィンドウサイズを超えた場合、システムはバリデーションエラーを返すようになりました。
+
+### 拡張思考におけるコンテキストウィンドウ
+
+思考が有効な場合のコンテキストウィンドウ使用量を計算する際に、注意すべき考慮事項があります:
+
+- 以前のターンの思考ブロックは除去され、コンテキストウィンドウにカウントされません
+- 現在のターンの思考は、そのターンの`max_tokens`制限にカウントされます
+
+有効なコンテキストウィンドウは次のように計算されます:
+
+```
+context window =
+  (current input tokens - previous thinking tokens) +
+  (thinking tokens + encrypted thinking tokens + text output tokens)
+```
+
+特に思考を含むマルチターン会話を扱う場合は、特定のユースケースに対する正確なトークンカウントを取得するために[トークンカウントAPI](/docs/ja/build-with-claude/token-counting)の使用をお勧めします。
+
+### 拡張思考とツール使用におけるコンテキストウィンドウ
+
+拡張思考をツール使用と組み合わせて使用する場合、思考ブロックは明示的に保持され、ツール結果とともに返される必要があります。
+
+```
+context window =
+  (current input tokens + previous thinking tokens + tool use tokens) +
+  (thinking tokens + encrypted thinking tokens + text output tokens)
+```
+
+### 拡張思考におけるトークン管理
+
+拡張思考を使用するClaude 3.7および4モデルのコンテキストウィンドウと`max_tokens`の動作を考慮すると、以下が必要になる場合があります:
+
+- トークン使用量をより積極的に監視・管理する
+- プロンプトの長さが変わるにつれて`max_tokens`の値を調整する
+- [トークンカウントエンドポイント](/docs/ja/build-with-claude/token-counting)をより頻繁に使用する可能性がある
+- 以前の思考ブロックがコンテキストウィンドウに蓄積されないことを認識する
+
+## 思考の暗号化
+
+完全な思考コンテンツは暗号化され、`signature`フィールドで返されます。このフィールドは、APIに戻された際に思考ブロックがClaudeによって生成されたことを検証するために使用されます。
+
+[ツールとの拡張思考](/docs/ja/build-with-claude/extended-thinking#extended-thinking-with-tool-use)を使用する場合にのみ、思考ブロックを送り返すことが厳密に必要です。それ以外の場合は、以前のターンの思考ブロックを省略するか、APIに戻して渡した場合にAPIがそれらを削除することができます。
+
+思考ブロックを送り返す場合は、一貫性のために、また潜在的な問題を回避するために、受け取ったとおりにすべてを渡すことをお勧めします。
+
+思考の暗号化に関する重要な考慮事項:
+- [ストリーミングレスポンス](/docs/ja/build-with-claude/extended-thinking#streaming-thinking)を使用する場合、署名は`content_block_stop`イベントの直前に`content_block_delta`イベント内の`signature_delta`を介して追加されます。
+- `signature`値は、以前のモデルよりもClaude 4モデルで大幅に長くなります。
+- `signature`フィールドは不透明なフィールドであり、解釈または解析しないでください。
+- `signature`値はプラットフォーム間で互換性があります（Claude APIs、[Amazon Bedrock](/docs/ja/build-with-claude/claude-on-amazon-bedrock)、および[Vertex AI](/docs/ja/build-with-claude/claude-on-vertex-ai)）。1つのプラットフォームで生成された値は、別のプラットフォームと互換性があります。
+
+## モデルバージョン間の思考の違い
+
+Messages APIは、Claude Sonnet 3.7とClaude 4モデル間で思考の処理が異なり、主に要約の動作に違いがあります。
+
+| 機能 | Claude Sonnet 3.7 | Claude 4モデル（Opus 4.5より前） | Claude Opus 4.5 | Claude Sonnet 4.6 | Claude Opus 4.6（アダプティブ思考） |
+|---------|------------------|-------------------------------|--------------------------|------------------|--------------------------|
+| **思考出力** | 完全な思考出力を返す | 要約された思考を返す | 要約された思考を返す | 要約された思考を返す | 要約された思考を返す |
+| **インターリーブ思考** | サポートなし | `interleaved-thinking-2025-05-14`ベータヘッダーでサポート | `interleaved-thinking-2025-05-14`ベータヘッダーでサポート | `interleaved-thinking-2025-05-14`ベータヘッダーまたはアダプティブ思考で自動 | アダプティブ思考で自動（ベータヘッダーはサポートなし） |
+| **思考ブロックの保持** | ターン間で保持されない | ターン間で保持されない | **デフォルトで保持** | **デフォルトで保持** | **デフォルトで保持** |
+
+### Claude Opus 4.5以降での思考ブロックの保持
+
+Claude Opus 4.5以降（Claude Opus 4.6を含む）では、**以前のアシスタントターンの思考ブロックがデフォルトでモデルコンテキストに保持されます**。これは、以前のターンの思考ブロックを削除する古いモデルとは異なります。
+
+**思考ブロック保持の利点:**
+
+- **キャッシュの最適化**: ツール使用時に、保持された思考ブロックはツール結果とともに返され、アシスタントターン全体で段階的にキャッシュされるため、キャッシュヒットが可能になり、マルチステップワークフローでのトークン節約につながります
+- **知能への影響なし**: 思考ブロックの保持はモデルのパフォーマンスに悪影響を与えません
+
+**重要な考慮事項:**
+
+- **コンテキスト使用量**: 思考ブロックがコンテキストに保持されるため、長い会話ではより多くのコンテキストスペースを消費します
+- **自動動作**: これはClaude Opus 4.5以降のモデル（Opus 4.6を含む）のデフォルト動作です—コード変更やベータヘッダーは不要です
+- **後方互換性**: この機能を活用するには、ツール使用時と同様に、完全で未変更の思考ブロックをAPIに返し続けてください
+
+古いモデル（Claude Sonnet 4.5、Opus 4.1など）では、以前のターンの思考ブロックは引き続きコンテキストから削除されます。
+
+## 料金
+
+基本料金、キャッシュ書き込み、キャッシュヒット、出力トークンを含む完全な料金情報については、[料金ページ](/docs/ja/about-claude/pricing)を参照してください。
+
+思考プロセスは以下に対して料金が発生します:
+- 思考中に使用されるトークン（出力トークン）
+- 後続のリクエストに含まれる最後のアシスタントターンの思考ブロック（入力トークン）
+- 標準的なテキスト出力トークン
+
+拡張思考が有効な場合、この機能をサポートするために特殊なシステムプロンプトが自動的に含まれます。
+
+要約された思考を使用する場合:
+- **入力トークン**: 元のリクエストのトークン（以前のターンからの思考トークンを除く）
+- **出力トークン（課金）**: Claudeが内部的に生成した元の思考トークン
+- **出力トークン（可視）**: レスポンスに表示される要約された思考トークン
+- **課金なし**: サマリを生成するために使用されるトークン
+
+`display: "omitted"`を使用する場合:
+- **入力トークン**: 元のリクエストのトークン（要約と同じ）
+- **出力トークン（課金）**: Claudeが内部的に生成した元の思考トークン（要約と同じ）
+- **出力トークン（可視）**: ゼロの思考トークン（`thinking`フィールドは空）
+
+課金される出力トークン数は、レスポンスに表示されるトークン数と**一致しません**。レスポンスに表示される思考コンテンツではなく、完全な思考プロセスに対して課金されます。
+
+## 拡張思考のベストプラクティスと考慮事項
+
+### 思考バジェットの使い方
+
+- **バジェットの最適化**: 最小バジェットは1,024トークンです。最小値から始めて、ユースケースに最適な範囲を見つけるために思考バジェットを段階的に増やすことをお勧めします。トークン数が多いほどより包括的な推論が可能になりますが、タスクによっては収穫逓減が生じます。バジェットを増やすとレスポンスの品質が向上しますが、レイテンシが増加するトレードオフがあります。重要なタスクでは、最適なバランスを見つけるために異なる設定をテストしてください。思考バジェットは厳密な制限ではなく目標値であることに注意してください—実際のトークン使用量はタスクに基づいて変動する場合があります。
+- **開始点**: 複雑なタスクには大きな思考バジェット（16k以上のトークン）から始め、ニーズに基づいて調整してください。
+- **大きなバジェット**: 32kを超える思考バジェットの場合、ネットワーキングの問題を避けるために[バッチ処理](/docs/ja/build-with-claude/batch-processing)の使用をお勧めします。
+- **トークン使用量の追跡**: コストとパフォーマンスを最適化するために思考トークンの使用量を監視してください。
+
+### パフォーマンスに関する考慮事項
+
+- **レスポンス時間**: 推論プロセスに必要な追加処理により、レスポンス時間が長くなる可能性があることに備えてください。
+- **ストリーミング要件**: SDKは、長時間実行リクエストでのHTTPタイムアウトを避けるため、`max_tokens`が21,333を超える場合にストリーミングを必要とします。
+
+### 機能の互換性
+
+- 思考は`temperature`や`top_k`の変更、および[強制ツール使用](/docs/ja/agents-and-tools/tool-use/implement-tool-use#forcing-tool-use)とは互換性がありません。
+- 思考が有効な場合、`top_p`を1から0.95の間の値に設定できます。
+- 思考が有効な場合、レスポンスの事前入力はできません。
+- 思考バジェットの変更は、メッセージを含むキャッシュされたプロンプトプレフィックスを無効化します。ただし、キャッシュされたシステムプロンプトとツール定義は、思考パラメータが変更されても引き続き機能します。
+
+### 使用ガイドライン
+
+- **タスクの選択**: 数学、コーディング、分析など、段階的な推論が有益な特に複雑なタスクに拡張思考を使用してください。
+- **コンテキストの処理**: 以前の思考ブロックを自分で削除する必要はありません。Claude APIは以前のターンの思考ブロックを自動的に無視し、コンテキスト使用量の計算に含めません。
+- **プロンプトエンジニアリング**: Claudeの思考能力を最大限に活用したい場合は、[拡張思考のプロンプティングのヒント](/docs/ja/build-with-claude/prompt-engineering/extended-thinking-tips)をご確認ください。

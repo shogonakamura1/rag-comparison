@@ -1,38 +1,230 @@
-# Batch Processing
+# バッチ処理
 
-Batch processing allows you to submit multiple requests together for asynchronous processing, useful for large volumes of data, non-time-sensitive tasks, and cost optimization.
+---
 
-## How the Message Batches API Works
+バッチ処理は、大量のリクエストを効率的に処理するための強力なアプローチです。即時レスポンスで1件ずつリクエストを処理する代わりに、バッチ処理では複数のリクエストをまとめて非同期処理のために送信できます。このパターンは特に以下の場合に有用です:
 
-1. The system creates a new Message Batch with the provided Messages requests
-2. The batch is processed asynchronously, with each request handled independently
-3. You can poll for the status of the batch and retrieve results when processing has ended
+- 大量のデータを処理する必要がある場合
+- 即時レスポンスが不要な場合
+- コスト効率を最適化したい場合
+- 大規模な評価や分析を実行している場合
 
-Useful for: large-scale evaluations, content moderation, data analysis, and generating insights for large datasets.
+Message Batches APIは、このパターンのAnthropicによる最初の実装です。
 
-## Key Features
+この機能は[Zero Data Retention (ZDR)](/docs/ja/build-with-claude/api-and-data-retention)の**対象外**です。データは機能の標準的な保持ポリシーに従って保持されます。
 
-- 50% discount on both input and output tokens compared to standard API pricing
-- Most batches finish in less than 1 hour
-- Each request in the batch is processed independently
-- Results can be retrieved when all requests have completed
+---
 
-## Batch Processing Limits
+# Message Batches API
 
-- Maximum 100,000 requests per batch
-- Batches expire after 24 hours if not completed
-- Results are available for 29 days after batch completion
+Message Batches APIは、大量の[Messages](/docs/ja/api/messages)リクエストを非同期で処理するための、強力でコスト効率の高い方法です。このアプローチは即時レスポンスを必要としないタスクに適しており、ほとんどのバッチは1時間以内に完了し、コストを50%削減しながらスループットを向上させます。
 
-## Extended Output
+## Message Batches APIの仕組み
 
-On the Message Batches API, Opus 4.6 and Sonnet 4.6 support up to 300k output tokens by using the output-300k-2026-03-24 beta header.
+Message Batches APIにリクエストを送信すると:
 
-## Pricing
+1. システムが提供されたMessagesリクエストで新しいMessage Batchを作成します。
+2. バッチは非同期で処理され、各リクエストは独立して処理されます。
+3. バッチのステータスをポーリングし、すべてのリクエストの処理が完了したら結果を取得できます。
 
-| Model | Batch input | Batch output |
-|-------|------------|-------------|
+これは、以下のような即時結果を必要としない一括操作に特に有用です:
+- 大規模評価: 何千ものテストケースを効率的に処理する。
+- コンテンツモデレーション: 大量のユーザー生成コンテンツを非同期で分析する。
+- データ分析: 大規模なデータセットのインサイトやサマリーを生成する。
+- 一括コンテンツ生成: 様々な目的（例: 商品説明、記事サマリー）のために大量のテキストを作成する。
+
+### バッチの制限事項
+
+- Message Batchは、100,000件のMessageリクエストまたは256MBのサイズのいずれか先に達した方に制限されます。
+- システムは各バッチをできるだけ速く処理し、ほとんどのバッチは1時間以内に完了します。すべてのメッセージが完了した時点、または24時間後のいずれか早い方でバッチ結果にアクセスできます。処理が24時間以内に完了しない場合、バッチは期限切れになります。
+- バッチ結果は作成後29日間利用可能です。その後もバッチを表示できますが、結果はダウンロードできなくなります。
+- バッチはお使いの[Workspace](/settings/workspaces)にスコープされます。APIキーが属するWorkspace内で作成されたすべてのバッチ（およびその結果）を表示できます。
+- レート制限は、Batches API HTTPリクエストと処理待ちのバッチ内リクエスト数の両方に適用されます。[Message Batches APIのレート制限](/docs/ja/api/rate-limits#message-batches-api)を参照してください。また、現在の需要とリクエスト量に基づいて処理が遅くなる場合があります。その場合、24時間後に期限切れになるリクエストが増える可能性があります。
+- 高スループットと並行処理のため、バッチがWorkspaceに設定された[支出制限](/settings/limits)をわずかに超える場合があります。
+
+### サポートされているモデル
+
+すべての[アクティブなモデル](/docs/ja/about-claude/models/overview)がMessage Batches APIをサポートしています。
+
+### バッチ処理できるもの
+
+Messages APIに対して行えるリクエストはすべてバッチに含めることができます。これには以下が含まれます:
+
+- Vision
+- ツール使用
+- システムメッセージ
+- マルチターン会話
+- すべてのベータ機能
+
+バッチ内の各リクエストは独立して処理されるため、1つのバッチ内で異なるタイプのリクエストを混在させることができます。
+
+バッチの処理には5分以上かかる場合があるため、共有コンテキストを持つバッチを処理する際のキャッシュヒット率を向上させるために、プロンプトキャッシングで[1時間のキャッシュ期間](/docs/ja/build-with-claude/prompt-caching#1-hour-cache-duration)の使用を検討してください。
+
+---
+
+## 料金
+
+Batches APIは大幅なコスト削減を提供します。すべての使用量は標準APIの50%の料金で請求されます。
+
+| モデル | バッチ入力 | バッチ出力 |
+|-------------------|------------------|-----------------|
 | Claude Opus 4.6 | $2.50 / MTok | $12.50 / MTok |
+| Claude Opus 4.5 | $2.50 / MTok | $12.50 / MTok |
+| Claude Opus 4.1 | $7.50 / MTok | $37.50 / MTok |
+| Claude Opus 4 | $7.50 / MTok | $37.50 / MTok |
 | Claude Sonnet 4.6 | $1.50 / MTok | $7.50 / MTok |
+| Claude Sonnet 4.5 | $1.50 / MTok | $7.50 / MTok |
+| Claude Sonnet 4 | $1.50 / MTok | $7.50 / MTok |
+| Claude Sonnet 3.7 (非推奨) | $1.50 / MTok | $7.50 / MTok |
 | Claude Haiku 4.5 | $0.50 / MTok | $2.50 / MTok |
+| Claude Haiku 3.5 | $0.40 / MTok | $2 / MTok |
+| Claude Opus 3 (非推奨) | $7.50 / MTok | $37.50 / MTok |
+| Claude Haiku 3 | $0.125 / MTok | $0.625 / MTok |
 
-This represents a 50% discount compared to standard API pricing.
+---
+
+## Message Batches APIの使い方
+
+### バッチの準備と作成
+
+Message Batchは、Messageを作成するためのリクエストのリストで構成されます。個々のリクエストの形式は以下で構成されます:
+
+- Messagesリクエストを識別するための一意の`custom_id`
+- 標準の[Messages API](/docs/ja/api/messages)パラメータを含む`params`オブジェクト
+
+このリストを`requests`パラメータに渡すことで[バッチを作成](/docs/ja/api/creating-message-batches)できます。
+
+**Messages APIでバッチリクエストをテストする**
+
+各メッセージリクエストの`params`オブジェクトの検証は非同期で実行され、バッチ全体の処理が完了したときに検証エラーが返されます。まず[Messages API](/docs/ja/api/messages)でリクエストの形式を確認することで、入力が正しく構築されていることを確認できます。
+
+バッチが最初に作成されると、レスポンスの処理ステータスは`in_progress`になります。
+
+### バッチの追跡
+
+Message Batchの`processing_status`フィールドは、バッチが処理中のステージを示します。最初は`in_progress`として始まり、バッチ内のすべてのリクエストの処理が完了して結果が準備できると`ended`に更新されます。[Console](/settings/workspaces/default/batches)にアクセスするか、[取得エンドポイント](/docs/ja/api/retrieving-message-batches)を使用してバッチの状態を監視できます。
+
+#### Message Batchの完了をポーリングする
+
+Message Batchをポーリングするには、バッチ作成時のレスポンスまたはバッチ一覧から提供される`id`が必要です。処理が完了するまで定期的にバッチステータスを確認するポーリングループを実装できます。
+
+### すべてのMessage Batchを一覧表示する
+
+[一覧エンドポイント](/docs/ja/api/listing-message-batches)を使用して、Workspace内のすべてのMessage Batchを一覧表示できます。APIはページネーションをサポートし、必要に応じて追加ページを自動的に取得します。
+
+### バッチ結果の取得
+
+バッチ処理が完了すると、バッチ内の各Messagesリクエストに結果が生成されます。結果タイプは4種類あります:
+
+| 結果タイプ | 説明 |
+|-------------|-------------|
+| `succeeded` | リクエストが成功しました。メッセージ結果が含まれます。 |
+| `errored` | リクエストでエラーが発生し、メッセージが作成されませんでした。考えられるエラーには、無効なリクエストや内部サーバーエラーが含まれます。これらのリクエストには課金されません。 |
+| `canceled` | このリクエストがモデルに送信される前にユーザーがバッチをキャンセルしました。これらのリクエストには課金されません。 |
+| `expired` | このリクエストがモデルに送信される前にバッチが24時間の有効期限に達しました。これらのリクエストには課金されません。 |
+
+バッチの`request_counts`で結果の概要を確認できます。これにより、これら4つの状態に達したリクエストの数が表示されます。
+
+バッチの結果はMessage Batchの`results_url`プロパティでダウンロードでき、組織の権限が許可している場合はConsoleでも確認できます。結果のサイズが大きくなる可能性があるため、一度にすべてダウンロードするのではなく、[結果をストリーミング](/docs/ja/api/retrieving-message-batch-results)することをお勧めします。
+
+結果は`.jsonl`形式で、各行はMessage Batch内の単一リクエストの結果を表す有効なJSONオブジェクトです。ストリーミングされた各結果に対して、`custom_id`と結果タイプに応じて異なる処理を行うことができます。
+
+結果にエラーがある場合、`result.error`は標準の[エラー形式](/docs/ja/api/errors#error-shapes)に設定されます。
+
+**バッチ結果は入力順と一致しない場合があります**
+
+バッチ結果は任意の順序で返される場合があり、バッチ作成時のリクエストの順序と一致しない場合があります。結果を対応するリクエストと正しく照合するには、常に`custom_id`フィールドを使用してください。
+
+### Message Batchのキャンセル
+
+[キャンセルエンドポイント](/docs/ja/api/canceling-message-batches)を使用して、現在処理中のMessage Batchをキャンセルできます。キャンセル直後、バッチの`processing_status`は`canceling`になります。キャンセルされたバッチは`ended`のステータスで終了し、キャンセル前に処理されたリクエストの部分的な結果が含まれる場合があります。
+
+### Message BatchesでのPrompt Cachingの使用
+
+Message Batches APIはPrompt Cachingをサポートしており、バッチリクエストのコストと処理時間を削減できる可能性があります。Prompt CachingとMessage Batchesの価格割引は重複適用でき、両方の機能を組み合わせて使用することでさらに大きなコスト削減が可能です。ただし、バッチリクエストは非同期かつ並行して処理されるため、キャッシュヒットはベストエフォートベースで提供されます。ユーザーは通常、トラフィックパターンに応じて30%から98%のキャッシュヒット率を経験します。
+
+バッチリクエストでキャッシュヒットの可能性を最大化するには:
+
+1. バッチ内のすべてのMessageリクエストに同一の`cache_control`ブロックを含める
+2. キャッシュエントリが5分間の有効期間後に期限切れにならないよう、リクエストの安定したストリームを維持する
+3. できるだけ多くのキャッシュされたコンテンツを共有するようにリクエストを構成する
+
+### 効果的なバッチ処理のベストプラクティス
+
+Batches APIを最大限に活用するには:
+
+- バッチ処理のステータスを定期的に監視し、失敗したリクエストに対して適切なリトライロジックを実装する。
+- 順序が保証されないため、結果とリクエストを簡単に照合できるよう、意味のある`custom_id`値を使用する。
+- 管理しやすくするために、非常に大きなデータセットを複数のバッチに分割することを検討する。
+- バリデーションエラーを避けるために、Messages APIで単一のリクエスト形式をドライランする。
+
+### 一般的な問題のトラブルシューティング
+
+予期しない動作が発生した場合:
+
+- バッチリクエストの合計サイズが256 MBを超えていないことを確認する。リクエストサイズが大きすぎる場合、413 `request_too_large`エラーが発生する可能性がある。
+- バッチ内のすべてのリクエストに[サポートされているモデル](#supported-models)を使用していることを確認する。
+- バッチ内の各リクエストに一意の`custom_id`があることを確認する。
+- バッチの`created_at`（処理の`ended_at`ではない）から29日未満であることを確認する。29日を超えると、結果は表示できなくなる。
+- バッチがキャンセルされていないことを確認する。
+
+バッチ内の1つのリクエストが失敗しても、他のリクエストの処理には影響しないことに注意してください。
+
+---
+
+## バッチのストレージとプライバシー
+
+- **ワークスペースの分離**: バッチは作成されたワークスペース内で分離されます。そのワークスペースに関連付けられたAPIキー、またはConsoleでワークスペースのバッチを表示する権限を持つユーザーのみがアクセスできます。
+
+- **結果の可用性**: バッチ結果はバッチ作成後29日間利用可能で、取得と処理に十分な時間が確保されています。
+
+---
+
+## データ保持
+
+バッチ処理では、バッチ作成後最大29日間、リクエストとレスポンスのデータが保存されます。処理後はいつでも`DELETE /v1/messages/batches/{batch_id}`エンドポイントを使用してメッセージバッチを削除できます。非同期処理では、バッチの完了と結果の取得まで、入力と出力の両方をサーバー側で保存する必要があります。
+
+すべての機能にわたるZDRの適格性については、[APIとデータ保持](/docs/ja/build-with-claude/api-and-data-retention)を参照してください。
+
+## FAQ
+
+### バッチの処理にはどのくらい時間がかかりますか？
+
+バッチの処理には最大24時間かかる場合がありますが、多くはそれより早く完了します。実際の処理時間は、バッチのサイズ、現在の需要、およびリクエスト量によって異なります。バッチが期限切れになり、24時間以内に完了しない場合もあります。
+
+### Batches APIはすべてのモデルで利用できますか？
+
+サポートされているモデルのリストについては、上記を参照してください。
+
+### Message Batches APIを他のAPI機能と組み合わせて使用できますか？
+
+はい、Message Batches APIはベータ機能を含むMessages APIで利用可能なすべての機能をサポートしています。ただし、バッチリクエストではストリーミングはサポートされていません。
+
+### Message Batches APIは価格にどのような影響を与えますか？
+
+Message Batches APIは、標準のAPI価格と比較してすべての使用量に対して50%の割引を提供します。これは入力トークン、出力トークン、および特殊トークンに適用されます。価格の詳細については、[価格ページ](https://claude.com/pricing#anthropic-api)をご覧ください。
+
+### 送信後にバッチを更新できますか？
+
+いいえ、バッチが送信されると変更することはできません。変更が必要な場合は、現在のバッチをキャンセルして新しいバッチを送信する必要があります。キャンセルはすぐに反映されない場合があることに注意してください。
+
+### Message Batches APIにレート制限はありますか？また、Messages APIのレート制限と相互作用しますか？
+
+Message Batches APIには、HTTPリクエストベースのレート制限に加えて、処理が必要なリクエスト数の制限があります。[Message Batches APIのレート制限](/docs/ja/api/rate-limits#message-batches-api)を参照してください。Batches APIの使用はMessages APIのレート制限には影響しません。
+
+### バッチリクエストのエラーはどのように処理しますか？
+
+結果を取得すると、各リクエストには`result`フィールドがあり、`succeeded`（成功）、`errored`（エラー）、`canceled`（キャンセル）、または`expired`（期限切れ）のいずれかが示されます。`errored`の結果には、追加のエラー情報が提供されます。エラーレスポンスオブジェクトは[APIリファレンス](/docs/ja/api/creating-message-batches)で確認できます。
+
+### Message Batches APIはプライバシーとデータ分離をどのように処理しますか？
+
+Message Batches APIは、強力なプライバシーとデータ分離対策を備えて設計されています:
+
+1. バッチとその結果は、作成されたワークスペース内で分離されます。つまり、同じワークスペースのAPIキーのみがアクセスできます。
+2. バッチ内の各リクエストは独立して処理され、リクエスト間でデータが漏洩することはありません。
+3. 結果は限られた期間（29日間）のみ利用可能で、Anthropicの[データ保持ポリシー](https://support.claude.com/en/articles/7996866-how-long-do-you-store-personal-data)に従います。
+4. Consoleでのバッチ結果のダウンロードは、組織レベルまたはワークスペースごとに無効にすることができます。
+
+### Message Batches APIでPrompt Cachingを使用できますか？
+
+はい、Message Batches APIでPrompt Cachingを使用することは可能です。ただし、非同期バッチリクエストは並行して任意の順序で処理される可能性があるため、キャッシュヒットはベストエフォートベースで提供されます。

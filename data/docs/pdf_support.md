@@ -1,50 +1,148 @@
-# PDF Support
+# PDFサポート
 
-Process PDFs with Claude. Extract text, analyze charts, and understand visual content from your documents.
+ClaudeでPDFを処理します。ドキュメントからテキストを抽出し、チャートを分析し、視覚的なコンテンツを理解します。
 
-## Use Cases
-- Analyzing financial reports and understanding charts/tables
-- Extracting key information from legal documents
-- Translation assistance for documents
-- Converting document information into structured formats
+---
 
-## Requirements
+PDFに含まれるテキスト、画像、チャート、表についてClaudeに質問できるようになりました。主なユースケースの例:
 
-| Requirement | Limit |
+- 財務レポートの分析とチャート/表の理解
+- 法的文書からの重要情報の抽出
+- ドキュメントの翻訳支援
+- ドキュメント情報の構造化フォーマットへの変換
+
+## 始める前に
+
+### PDFの要件を確認する
+
+Claudeはあらゆる標準的なPDFに対応しています。ただし、PDFサポートを使用する際は、リクエストサイズが以下の要件を満たしていることを確認してください:
+
+| 要件 | 制限 |
 |------------|--------|
-| Maximum request size | 32 MB |
-| Maximum pages per request | 600 (100 for models with a 200k-token context window) |
-| Format | Standard PDF (no passwords/encryption) |
+| 最大リクエストサイズ | 32MB |
+| リクエストあたりの最大ページ数 | 100 |
+| フォーマット | 標準PDF（パスワード/暗号化なし） |
 
-## How to Send PDFs
+両方の制限は、PDFと一緒に送信される他のコンテンツを含む、リクエストペイロード全体に適用されることにご注意ください。
 
-Three ways to provide PDFs to Claude:
-1. As a URL reference to a PDF hosted online
-2. As a base64-encoded PDF in document content blocks
-3. By a file_id from the Files API
+PDFサポートはClaudeのビジョン機能に依存しているため、他のビジョンタスクと同じ[制限事項と考慮事項](/docs/ja/build-with-claude/vision#limitations)が適用されます。
 
-## How PDF Support Works
+### サポートされているプラットフォームとモデル
 
-1. The system converts each page of the document into an image
-2. Text from each page is extracted and provided alongside each page's image
-3. Claude analyzes both text and images to understand the document
-4. Claude responds referencing both textual and visual content
+PDFサポートは現在、直接APIアクセスとGoogle Vertex AIを通じてサポートされています。すべての[アクティブモデル](/docs/ja/about-claude/models/overview)がPDF処理をサポートしています。
 
-PDF support relies on Claude's vision capabilities and is subject to the same limitations as other vision tasks.
+PDFサポートは以下の考慮事項とともにAmazon Bedrockでも利用可能になりました:
 
-## Cost Estimation
-- Text token costs: Each page typically uses 1,500-3,000 tokens depending on content density
-- Image token costs: Each page is converted into an image with standard image-based cost calculations
-- No additional PDF fees beyond standard token pricing
+### Amazon Bedrock PDFサポート
 
-## Best Practices
-- Place PDFs before text in requests
-- Use standard fonts
-- Ensure text is clear and legible
-- Rotate pages to proper upright orientation
-- Use logical page numbers in prompts
-- Split large PDFs into chunks when needed
-- Enable prompt caching for repeated analysis
+Amazon BedrockのConverse APIを通じてPDFサポートを使用する場合、2つの異なるドキュメント処理モードがあります:
 
-## Supported Platforms
-PDF support is available via direct API access, Google Vertex AI, and Amazon Bedrock. All active models support PDF processing.
+**重要**: Converse APIでClaudeの完全なビジュアルPDF理解機能にアクセスするには、引用を有効にする必要があります。引用を有効にしない場合、APIは基本的なテキスト抽出のみにフォールバックします。[引用の使用方法](/docs/ja/build-with-claude/citations)の詳細をご覧ください。
+
+#### ドキュメント処理モード
+
+1. **Converse Document Chat**（従来のモード - テキスト抽出のみ）
+   - PDFからの基本的なテキスト抽出を提供
+   - PDF内の画像、チャート、視覚的レイアウトの分析は不可
+   - 3ページのPDFで約1,000トークンを使用
+   - 引用が有効でない場合に自動的に使用される
+
+2. **Claude PDF Chat**（新モード - 完全なビジュアル理解）
+   - PDFの完全なビジュアル分析を提供
+   - チャート、グラフ、画像、視覚的レイアウトの理解と分析が可能
+   - 包括的な理解のために各ページをテキストと画像の両方として処理
+   - 3ページのPDFで約7,000トークンを使用
+   - Converse APIで**引用を有効にする必要がある**
+
+#### 主な制限事項
+
+- **Converse API**: ビジュアルPDF分析には引用を有効にする必要があります。現在、引用なしでビジュアル分析を使用するオプションはありません（InvokeModel APIとは異なります）。
+- **InvokeModel API**: 強制的な引用なしでPDF処理を完全に制御できます。
+
+#### よくある問題
+
+Converse APIを使用している際にClaudeがPDF内の画像やチャートを認識しないとお客様から報告があった場合、引用フラグを有効にする必要がある可能性が高いです。引用フラグがない場合、Converseは基本的なテキスト抽出のみにフォールバックします。
+
+これはConverse APIの既知の制約であり、対処に取り組んでいます。引用なしでビジュアルPDF分析が必要なアプリケーションの場合は、代わりにInvokeModel APIの使用を検討してください。
+
+.csv、.xlsx、.docx、.md、.txtファイルなどの非PDFファイルについては、[他のファイル形式の操作](/docs/ja/build-with-claude/files#working-with-other-file-formats)をご覧ください。
+
+***
+
+## ClaudeでPDFを処理する
+
+### 最初のPDFリクエストを送信する
+
+Messages APIを使用した簡単な例から始めましょう。PDFをClaudeに提供する方法は3つあります:
+
+1. オンラインでホストされているPDFへのURL参照として
+2. `document`コンテンツブロック内のbase64エンコードされたPDFとして
+3. [Files API](/docs/ja/build-with-claude/files)からの`file_id`を使用して
+
+#### オプション1: URLベースのPDFドキュメント
+
+最も簡単なアプローチは、URLから直接PDFを参照することです。
+
+#### オプション2: Base64エンコードされたPDFドキュメント
+
+ローカルシステムからPDFを送信する必要がある場合や、URLが利用できない場合に使用します。
+
+#### オプション3: Files API
+
+繰り返し使用するPDFや、エンコードのオーバーヘッドを避けたい場合は、[Files API](/docs/ja/build-with-claude/files)を使用してください。
+
+### PDFサポートの仕組み
+
+PDFをClaudeに送信すると、以下のステップが実行されます:
+
+1. **システムがドキュメントの内容を抽出します。**
+    - システムがドキュメントの各ページを画像に変換します。
+    - 各ページからテキストが抽出され、各ページの画像と一緒に提供されます。
+
+2. **Claudeがテキストと画像の両方を分析し、ドキュメントをより深く理解します。**
+    - ドキュメントはテキストと画像の組み合わせとして分析用に提供されます。
+    - これにより、チャート、図表、その他のテキスト以外のコンテンツなど、PDFの視覚的要素についてのインサイトをユーザーが質問できるようになります。
+
+3. **Claudeが関連する場合はPDFの内容を参照して応答します。**
+
+    Claudeは応答時にテキストコンテンツと視覚的コンテンツの両方を参照できます。PDFサポートを以下と統合することで、パフォーマンスをさらに向上させることができます:
+    - **プロンプトキャッシング**: 繰り返しの分析のパフォーマンスを向上させるため。
+    - **バッチ処理**: 大量のドキュメント処理のため。
+    - **ツール使用**: ドキュメントから特定の情報を抽出してツール入力として使用するため。
+
+### コストを見積もる
+
+PDFファイルのトークン数は、ドキュメントから抽出されたテキストの総量とページ数に依存します:
+
+- テキストトークンコスト: 各ページは通常、コンテンツの密度に応じてページあたり1,500〜3,000トークンを使用します。追加のPDF料金なしで標準API料金が適用されます。
+- 画像トークンコスト: 各ページが画像に変換されるため、同じ[画像ベースのコスト計算](/docs/ja/build-with-claude/vision#evaluate-image-size)が適用されます。
+
+[トークンカウント](/docs/ja/build-with-claude/token-counting)を使用して、特定のPDFのコストを見積もることができます。
+
+***
+
+## PDF処理を最適化する
+
+### パフォーマンスを向上させる
+
+最適な結果を得るために、以下のベストプラクティスに従ってください:
+
+- リクエスト内でPDFをテキストの前に配置する
+- 標準フォントを使用する
+- テキストが明確で読みやすいことを確認する
+- ページを適切な向きに回転させる
+- プロンプトでは論理的なページ番号（PDFビューアーのもの）を使用する
+- 必要に応じて大きなPDFをチャンクに分割する
+- 繰り返しの分析にはプロンプトキャッシングを有効にする
+
+### 実装をスケールする
+
+大量処理の場合、以下のアプローチを検討してください:
+
+#### プロンプトキャッシングを使用する
+
+繰り返しのクエリでパフォーマンスを向上させるためにPDFをキャッシュします。
+
+#### ドキュメントバッチを処理する
+
+大量のワークフローにはMessage Batches APIを使用します。

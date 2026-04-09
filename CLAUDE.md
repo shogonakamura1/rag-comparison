@@ -1,45 +1,46 @@
-# AI-DLC and Spec-Driven Development
+# AI-DLC と 仕様駆動開発
 
-Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life Cycle)
+AI-DLC（AI Development Life Cycle）上で実装する Kiro スタイルの仕様駆動開発（Spec-Driven Development）
 
-## Project Context
+## プロジェクトコンテキスト
 
-### Paths
-- Steering: `.kiro/steering/`
-- Specs: `.kiro/specs/`
+### パス
+- ステアリング: `.kiro/steering/`
+- 仕様（Spec）: `.kiro/specs/`
 
-### Steering vs Specification
+### ステアリングと仕様の違い
 
-**Steering** (`.kiro/steering/`) - Guide AI with project-wide rules and context
-**Specs** (`.kiro/specs/`) - Formalize development process for individual features
+**ステアリング**（`.kiro/steering/`）- プロジェクト全体のルールやコンテキストで AI を導く
+**仕様**（`.kiro/specs/`）- 個別機能ごとの開発プロセスを形式化する
 
-### Active Specifications
-- Check `.kiro/specs/` for active specifications
-- Use `/kiro:spec-status [feature-name]` to check progress
+### アクティブな仕様
+- アクティブな仕様は `.kiro/specs/` を確認する
+- 進捗確認には `/kiro:spec-status [feature-name]` を使用する
 
-## Development Guidelines
-- Think in English, generate responses in Japanese. All Markdown content written to project files (e.g., requirements.md, design.md, tasks.md, research.md, validation reports) MUST be written in the target language configured for this specification (see spec.json.language).
+## 開発ガイドライン
+- 思考は英語で行い、応答は日本語で生成すること。プロジェクトファイルに書き込む Markdown コンテンツ（例: requirements.md, design.md, tasks.md, research.md, バリデーションレポート）は、該当仕様に設定された言語（`spec.json.language` を参照）で必ず記述すること。
 
-## Minimal Workflow
-- Phase 0 (optional): `/kiro:steering`, `/kiro:steering-custom`
-- Phase 1 (Specification):
+## 最小ワークフロー
+- Phase 0（任意）: `/kiro:steering`, `/kiro:steering-custom`
+- Phase 1（仕様策定）:
   - `/kiro:spec-init "description"`
   - `/kiro:spec-requirements {feature}`
-  - `/kiro:validate-gap {feature}` (optional: for existing codebase)
+  - `/kiro:validate-gap {feature}`（任意: 既存コードベース向け）
   - `/kiro:spec-design {feature} [-y]`
-  - `/kiro:validate-design {feature}` (optional: design review)
+  - `/kiro:validate-design {feature}`（任意: 設計レビュー）
   - `/kiro:spec-tasks {feature} [-y]`
-- Phase 2 (Implementation): `/kiro:spec-impl {feature} [tasks]`
-  - `/kiro:validate-impl {feature}` (optional: after implementation)
-- Progress check: `/kiro:spec-status {feature}` (use anytime)
+- Phase 2（実装）: `/kiro:spec-impl {feature} [tasks]`
+  - `/kiro:validate-impl {feature}`（任意: 実装後の検証）
+- 進捗確認: `/kiro:spec-status {feature}`（いつでも使用可能）
 
-## Development Rules
-- 3-phase approval workflow: Requirements → Design → Tasks → Implementation
-- Human review required each phase; use `-y` only for intentional fast-track
-- Keep steering current and verify alignment with `/kiro:spec-status`
-- Follow the user's instructions precisely, and within that scope act autonomously: gather the necessary context and complete the requested work end-to-end in this run, asking questions only when essential information is missing or the instructions are critically ambiguous.
+## 開発ルール
+- 3 段階の承認ワークフロー: 要件定義 → 設計 → タスク → 実装
+- 各フェーズで人によるレビューが必須。`-y` は意図的なファストトラック時のみ使用すること
+- ステアリングは常に最新に保ち、`/kiro:spec-status` で整合性を確認すること
+- ユーザーの指示には忠実に従い、その範囲内では自律的に行動すること。必要なコンテキストを収集し、依頼された作業をこの実行内でエンドツーエンドに完遂する。質問は、不可欠な情報が欠けている場合や指示が致命的に曖昧な場合のみ行うこと。
+- 指示通りに開発を終え、適切なタイミングでGitにコミットし、リモートにプッシュを行うこと。
 
-## Steering Configuration
-- Load entire `.kiro/steering/` as project memory
-- Default files: `product.md`, `tech.md`, `structure.md`
-- Custom files are supported (managed via `/kiro:steering-custom`)
+## ステアリング設定
+- `.kiro/steering/` 全体をプロジェクトメモリとしてロードする
+- デフォルトファイル: `product.md`, `tech.md`, `structure.md`
+- カスタムファイルもサポート（`/kiro:steering-custom` で管理）

@@ -1,32 +1,179 @@
-# Tool use with Claude
+# Claudeでのツール使用
 
-Connect Claude to external tools and APIs. Learn where tools execute and how the agentic loop works.
+Claudeのツールおよび関数との連携機能を活用して、Claudeの能力を拡張し、より幅広いタスクを実行する方法を学びます。
 
-Tool use lets Claude call functions you define or that Anthropic provides. Claude decides when to call a tool based on the user's request and the tool's description, then returns a structured call that your application executes (client tools) or that Anthropic executes (server tools).
+---
 
-## How tool use works
+Claudeはツールや関数と連携する機能を備えており、Claudeの能力を拡張してより幅広いタスクを実行できます。
 
-Tools differ primarily by where the code executes. Client tools (including user-defined tools and Anthropic-schema tools like bash and text_editor) run in your application: Claude responds with stop_reason: "tool_use" and one or more tool_use blocks, your code executes the operation, and you send back a tool_result. Server tools (web_search, code_execution, web_fetch, tool_search) run on Anthropic's infrastructure: you see the results directly without handling execution.
+新しい[コース](https://anthropic.skilljar.com/)の一部として、Claudeでのツール使用をマスターするために必要なすべてを学びましょう。引き続き、この[フォーム](https://forms.gle/BFnYc6iCkWoRzFgk7)を使用してアイデアや提案を共有してください。
 
-You can guarantee schema conformance with strict tool use by adding strict: true to your tool definitions to ensure Claude's tool calls always match your schema exactly.
+**厳密なツール使用によるスキーマ準拠の保証**
 
-Tool access is one of the highest-leverage primitives you can give an agent. On benchmarks like LAB-Bench FigQA (scientific figure interpretation) and SWE-bench (real-world software engineering), adding even basic tools produces outsized capability gains, often surpassing human expert baselines.
+[Structured Outputs](/docs/ja/build-with-claude/structured-outputs)は、ツール入力に対する保証されたスキーマバリデーションを提供します。ツール定義に`strict: true`を追加することで、Claudeのツール呼び出しが常にスキーマに正確に一致することを保証します—型の不一致や欠落フィールドはもうありません。
 
-## Tool use for defining custom functions
+無効なツールパラメータが障害を引き起こす本番エージェントに最適です。[厳密なツール使用を使用するタイミングを学ぶ →](/docs/ja/build-with-claude/structured-outputs#when-to-use-json-outputs-vs-strict-tool-use)
 
-Claude can be given custom tool definitions using JSON Schema to define input parameters. When Claude determines it needs to use a tool, it returns a structured tool_use block with the tool name and input parameters as JSON. Your application then executes the function and returns the result via a tool_result block.
+---
 
-This enables Claude to interact with external APIs, databases, search engines, calculators, and any other service you want to integrate. Claude handles the decision of when to call a tool and what parameters to provide.
+## ツール使用の仕組み
 
-## What happens when Claude needs more information
+Claudeは2種類のツールをサポートしています:
 
-If the user's prompt doesn't include enough information to fill all the required parameters for a tool, Claude Opus is much more likely to recognize that a parameter is missing and ask for it. Claude Sonnet may ask, especially when prompted to think before outputting a tool request. But it may also do its best to infer a reasonable value.
+1. **クライアントツール**: あなたのシステム上で実行されるツールで、以下を含みます:
+   - あなたが作成・実装するユーザー定義のカスタムツール
+   - [コンピュータ使用](/docs/ja/agents-and-tools/tool-use/computer-use-tool)や[テキストエディタ](/docs/ja/agents-and-tools/tool-use/text-editor-tool)などのAnthropic定義ツール（クライアント側の実装が必要）
 
-## Pricing
+2. **サーバーツール**: [ウェブ検索](/docs/ja/agents-and-tools/tool-use/web-search-tool)や[ウェブフェッチ](/docs/ja/agents-and-tools/tool-use/web-fetch-tool)ツールなど、Anthropicのサーバー上で実行されるツール。これらのツールはAPIリクエストで指定する必要がありますが、あなた側での実装は不要です。
 
-Tool use requests are priced based on:
-1. The total number of input tokens sent to the model (including in the tools parameter)
-2. The number of output tokens generated
-3. For server-side tools, additional usage-based pricing (e.g., web search charges per search performed)
+Anthropic定義ツールは、モデルバージョン間の互換性を確保するためにバージョン付きの型（例: `web_search_20250305`、`text_editor_20250124`）を使用します。
 
-Client-side tools are priced the same as any other Claude API request, while server-side tools may incur additional charges based on their specific usage.
+### クライアントツール
+
+以下の手順でクライアントツールをClaudeと統合します:
+
+1. **Claudeにツールとユーザープロンプトを提供する**
+    - APIリクエストで、名前、説明、入力スキーマを含むクライアントツールを定義します。
+    - これらのツールが必要になる可能性のあるユーザープロンプトを含めます。例: 「サンフランシスコの天気は？」
+2. **Claudeがツールの使用を決定する**
+    - Claudeは、ユーザーのクエリに対していずれかのツールが役立つかどうかを評価します。
+    - 役立つ場合、Claudeは適切にフォーマットされたツール使用リクエストを構築します。
+    - クライアントツールの場合、APIレスポンスの`stop_reason`は`tool_use`となり、Claudeの意図を示します。
+3. **ツールを実行して結果を返す**
+    - Claudeのリクエストからツール名と入力を抽出します
+    - あなたのシステム上でツールコードを実行します
+    - `tool_result`コンテンツブロックを含む新しい`user`メッセージで結果を返します
+4. **Claudeがツールの結果を使用して応答を作成する**
+    - Claudeはツールの結果を分析して、元のユーザープロンプトに対する最終的な応答を作成します。
+
+注意: ステップ3と4はオプションです。一部のワークフローでは、Claudeのツール使用リクエスト（ステップ2）だけで十分であり、結果をClaudeに返す必要がない場合があります。
+
+### サーバーツール
+
+サーバーツールは異なるワークフローに従います:
+
+1. **Claudeにツールとユーザープロンプトを提供する**
+    - [ウェブ検索](/docs/ja/agents-and-tools/tool-use/web-search-tool)や[ウェブフェッチ](/docs/ja/agents-and-tools/tool-use/web-fetch-tool)などのサーバーツールには、独自のパラメータがあります。
+    - これらのツールが必要になる可能性のあるユーザープロンプトを含めます。例: 「AIに関する最新ニュースを検索して」や「このURLのコンテンツを分析して」
+2. **Claudeがサーバーツールを実行する**
+    - Claudeは、ユーザーのクエリに対してサーバーツールが役立つかどうかを評価します。
+    - 役立つ場合、Claudeはツールを実行し、結果は自動的にClaudeの応答に組み込まれます。
+3. **Claudeがサーバーツールの結果を使用して応答を作成する**
+    - Claudeはサーバーツールの結果を分析して、元のユーザープロンプトに対する最終的な応答を作成します。
+    - サーバーツールの実行には、追加のユーザーインタラクションは不要です。
+
+---
+
+## ClaudeでMCPツールを使用する
+
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io)を使用するアプリケーションを構築している場合、MCPサーバーのツールをClaudeのMessages APIで直接使用できます。MCPツール定義は、Claudeのツールフォーマットに似たスキーマフォーマットを使用します。`inputSchema`を`input_schema`にリネームするだけです。
+
+**独自のMCPクライアントを構築したくないですか？** [MCPコネクタ](/docs/ja/agents-and-tools/mcp-connector)を使用して、クライアントを実装せずにMessages APIからリモートMCPサーバーに直接接続できます。
+
+### MCPツールをClaudeフォーマットに変換する
+
+MCPクライアントを構築してMCPサーバーで`list_tools()`を呼び出すと、`inputSchema`フィールドを持つツール定義を受け取ります。これらのツールをClaudeで使用するには、Claudeのフォーマットに変換します。
+
+Claudeが`tool_use`ブロックで応答した場合、`call_tool()`を使用してMCPサーバー上でツールを実行し、`tool_result`ブロックで結果をClaudeに返します。
+
+MCPクライアントの構築に関する完全なガイドについては、[MCPクライアントの構築](https://modelcontextprotocol.io/docs/develop/build-client)を参照してください。
+
+---
+
+## ツール使用の例
+
+### 単一ツールの例
+
+Claudeに天気を尋ねるリクエストを送信すると、`stop_reason`が`tool_use`のレスポンスを返します。`tool_use`ブロックにはツール名と入力パラメータが含まれます。次に、提供された入力で関数を実行し、新しい`user`メッセージで`tool_result`として結果を返します。これによりClaudeは天気データを組み込んだ最終レスポンスを出力します。
+
+### 並列ツール使用
+
+Claudeは単一のレスポンス内で複数のツールを並列に呼び出すことができ、これは複数の独立した操作を必要とするタスクに便利です。並列ツールを使用する場合、すべての`tool_use`ブロックは単一のアシスタントメッセージに含まれ、対応するすべての`tool_result`ブロックは後続のユーザーメッセージで提供する必要があります。
+
+**重要**: APIエラーを回避し、Claudeが並列ツールを引き続き使用するようにするには、ツール結果を正しくフォーマットする必要があります。詳細なフォーマット要件と完全なコード例については、[実装ガイド](/docs/ja/agents-and-tools/tool-use/implement-tool-use#parallel-tool-use)を参照してください。
+
+### 複数ツールの例
+
+単一のリクエストでClaudeに複数のツールを選択肢として提供できます。例えば、`get_weather`と`get_time`の両方のツールを含めた場合、Claudeは以下のいずれかを行う可能性があります:
+
+- ツールを順次使用する（一度に1つずつ）— まず`get_weather`を呼び出し、天気の結果を受け取った後に`get_time`を呼び出す
+- 並列ツール呼び出しを使用する — 操作が独立している場合、単一のレスポンスで複数の`tool_use`ブロックを出力する
+
+Claudeが並列ツール呼び出しを行う場合、すべてのツール結果を単一の`user`メッセージで返す必要があり、各結果はそれぞれの`tool_result`ブロックに含める必要があります。
+
+### 情報不足
+
+ユーザーのプロンプトにツールのすべての必須パラメータを埋めるのに十分な情報が含まれていない場合、Claude Opusはパラメータが不足していることを認識し、それを尋ねる可能性がはるかに高くなります。Claude Sonnetは、特にツールリクエストを出力する前に考えるよう促された場合に尋ねることがあります。しかし、妥当な値を推測しようとすることもあります。
+
+この動作は保証されておらず、特にあいまいなプロンプトや知能の低いモデルの場合はそうです。Claude Opusが必須パラメータを埋めるのに十分なコンテキストを持っていない場合、ツール呼び出しを行う代わりに、明確化のための質問で応答する可能性がはるかに高くなります。
+
+### 順次ツール
+
+一部のタスクでは、あるツールの出力を別のツールの入力として使用して、複数のツールを順番に呼び出す必要がある場合があります。そのような場合、Claudeは一度に1つのツールを呼び出します。すべてのツールを一度に呼び出すよう促された場合、Claudeは上流のツール結果に依存する下流のツールのパラメータを推測する可能性があります。
+
+例えば、`get_location`ツールと`get_weather`ツールを組み合わせた場合、Claudeはまず`get_location`ツールを呼び出してユーザーの位置情報を取得します。`tool_result`で位置情報を返した後、Claudeはその位置情報を使って`get_weather`を呼び出し、最終的な回答を得ます。
+
+完全な会話の例は以下のようになります:
+
+| ロール | コンテンツ |
+| --- | --- |
+| User | 今いる場所の天気はどうですか？ |
+| Assistant | まず現在地を確認してから、そこの天気を調べます。[get_locationのツール使用] |
+| User | [一致するIDとSan Francisco, CAの結果を含むget_locationのツール結果] |
+| Assistant | [以下の入力を含むget_weatherのツール使用]{ "location": "San Francisco, CA", "unit": "fahrenheit" } |
+| User | [一致するIDと"59°F (15°C), mostly cloudy"の結果を含むget_weatherのツール結果] |
+| Assistant | 現在のSan Francisco, CAの天気は59°F（15°C）で、ほぼ曇りです。街は涼しく曇った日です。外出する場合は軽いジャケットを持っていくとよいでしょう。 |
+
+主要なステップは以下の通りです:
+
+1. Claudeはまず天気の質問に答えるためにユーザーの位置情報が必要であることを認識し、`get_location`ツールを呼び出します。
+2. ユーザー（つまりクライアントコード）が実際の`get_location`関数を実行し、`tool_result`ブロックで結果「San Francisco, CA」を返します。
+3. 位置情報がわかったので、Claudeは`get_weather`ツールを呼び出し、`location`パラメータとして「San Francisco, CA」を渡します。
+4. ユーザーは再び提供された引数で実際の`get_weather`関数を実行し、別の`tool_result`ブロックで天気データを返します。
+5. 最後に、Claudeは天気データを元の質問に対する自然言語の応答に組み込みます。
+
+### 思考連鎖ツール使用
+
+デフォルトでは、Claude Opusはツール使用クエリに回答する前に考えるよう促され、ツールが必要かどうか、どのツールを使用するか、適切なパラメータを最適に判断します。Claude SonnetとClaude Haikuはできるだけツールを使用するよう促され、不要なツールを呼び出したり、不足しているパラメータを推測したりする可能性が高くなります。SonnetまたはHaikuにツール呼び出しを行う前にユーザークエリをより適切に評価させるには、思考連鎖プロンプトを使用できます。
+
+---
+
+## 料金
+
+ツール使用リクエストは以下に基づいて料金が設定されます:
+
+1. モデルに送信される入力トークンの総数（`tools`パラメータを含む）
+2. 生成される出力トークンの数
+3. サーバー側ツールの場合、使用量に基づく追加料金（例: 実行された検索ごとのウェブ検索料金）
+
+クライアント側ツールは他のClaude APIリクエストと同じ料金ですが、サーバー側ツールは特定の使用量に基づいて追加料金が発生する場合があります。
+
+ツール使用による追加トークンは以下から生じます:
+
+- APIリクエストの`tools`パラメータ（ツール名、説明、スキーマ）
+- APIリクエストとレスポンスの`tool_use`コンテンツブロック
+- APIリクエストの`tool_result`コンテンツブロック
+
+`tools`を使用すると、ツール使用を可能にする特別なシステムプロンプトが自動的に含まれます。各モデルに必要なツール使用トークンの数は以下の通りです（上記の追加トークンを除く）。この表は少なくとも1つのツールが提供されていることを前提としています。`tools`が提供されていない場合、`none`のツール選択では追加のシステムプロンプトトークンは0になります。
+
+| モデル | ツール選択 | ツール使用システムプロンプトのトークン数 |
+|--------------------------|------------------------------------------------------|---------------------------------------------|
+| Claude Opus 4.6 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Opus 4.5 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Opus 4.1 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Opus 4 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 4.6 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 4.5 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 4 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 3.7 (非推奨) | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Haiku 4.5 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Haiku 3.5 | `auto`, `none` / `any`, `tool` | 264トークン / 340トークン |
+| Claude Opus 3 (非推奨) | `auto`, `none` / `any`, `tool` | 530トークン / 281トークン |
+| Claude Sonnet 3 | `auto`, `none` / `any`, `tool` | 159トークン / 235トークン |
+| Claude Haiku 3 | `auto`, `none` / `any`, `tool` | 264トークン / 340トークン |
+
+これらのトークン数は、通常の入力トークンと出力トークンに追加されて、リクエストの総コストが計算されます。
+
+現在のモデルごとの料金については、[モデル概要テーブル](/docs/ja/about-claude/models/overview#latest-models-comparison)をご参照ください。
+
+ツール使用プロンプトを送信すると、他のAPIリクエストと同様に、レスポンスは報告される`usage`メトリクスの一部として入力トークン数と出力トークン数の両方を出力します。

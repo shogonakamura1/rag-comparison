@@ -1,46 +1,57 @@
-# Models overview
+# モデル概要
 
-Claude is a family of state-of-the-art large language models developed by Anthropic. This guide introduces the available models and compares their performance.
+Claudeは、Anthropicが開発した最先端の大規模言語モデルファミリーです。このガイドでは、各モデルの紹介とパフォーマンスの比較を行います。
 
-## Choosing a model
+---
 
-If you're unsure which model to use, consider starting with Claude Opus 4.6 for the most complex tasks. It is the most intelligent broadly available model with exceptional performance in coding and reasoning.
+## モデルの選択
 
-All current Claude models support text and image input, text output, multilingual capabilities, and vision. Models are available via the Claude API, AWS Bedrock, and Google Vertex AI.
+どのモデルを使用すべきか迷っている場合は、最も複雑なタスクには**Claude Opus 4.6**から始めることをお勧めします。これは、コーディングと推論において卓越したパフォーマンスを発揮する最新世代のモデルです。
 
-### Latest models comparison
+現行のすべてのClaudeモデルは、テキストおよび画像入力、テキスト出力、多言語機能、ビジョンをサポートしています。モデルはAnthropic API、AWS Bedrock、Google Vertex AIを通じて利用可能です。
 
-| Feature | Claude Opus 4.6 | Claude Sonnet 4.6 | Claude Haiku 4.5 |
+モデルを選択したら、最初のAPI呼び出しの方法を学びましょう。
+
+### 最新モデルの比較
+
+| 機能 | Claude Opus 4.6 | Claude Sonnet 4.5 | Claude Haiku 4.5 |
 |:--------|:----------------|:------------------|:-----------------|
-| Description | The most intelligent broadly available model for agents and coding | The best combination of speed and intelligence | The fastest model with near-frontier intelligence |
-| Claude API ID | claude-opus-4-6 | claude-sonnet-4-6 | claude-haiku-4-5-20251001 |
-| Pricing | $5 / input MTok, $25 / output MTok | $3 / input MTok, $15 / output MTok | $1 / input MTok, $5 / output MTok |
-| Extended thinking | Yes | Yes | Yes |
-| Adaptive thinking | Yes | Yes | No |
-| Comparative latency | Moderate | Fast | Fastest |
-| Context window | 1M tokens (~750k words) | 1M tokens (~750k words) | 200k tokens (~150k words) |
-| Max output | 128k tokens | 64k tokens | 64k tokens |
-| Reliable knowledge cutoff | May 2025 | Aug 2025 | Feb 2025 |
-| Training data cutoff | Aug 2025 | Jan 2026 | Jul 2025 |
+| **説明** | エージェント構築とコーディングのための最もインテリジェントなモデル | 速度とインテリジェンスの最適な組み合わせ | フロンティアに近いインテリジェンスを持つ最速モデル |
+| **Claude API ID** | claude-opus-4-6 | claude-sonnet-4-5-20250929 | claude-haiku-4-5-20251001 |
+| **Claude APIエイリアス** | claude-opus-4-6 | claude-sonnet-4-5 | claude-haiku-4-5 |
+| **AWS Bedrock ID** | anthropic.claude-opus-4-6-v1:0 | anthropic.claude-sonnet-4-5-20250929-v1:0 | anthropic.claude-haiku-4-5-20251001-v1:0 |
+| **GCP Vertex AI ID** | claude-opus-4-6 | claude-sonnet-4-5@20250929 | claude-haiku-4-5@20251001 |
+| **料金** | $5 / 入力MTok、$25 / 出力MTok | $3 / 入力MTok、$15 / 出力MTok | $1 / 入力MTok、$5 / 出力MTok |
+| **拡張思考** | はい | はい | はい |
+| **適応思考** | はい | いいえ | いいえ |
+| **優先ティア** | はい | はい | はい |
+| **相対的なレイテンシ** | 中程度 | 高速 | 最速 |
+| **コンテキストウィンドウ** | 200Kトークン / 1Mトークン（ベータ） | 200Kトークン / 1Mトークン（ベータ） | 200Kトークン |
+| **最大出力** | 128Kトークン | 64Kトークン | 64Kトークン |
+| **信頼性の高い知識カットオフ** | 2025年5月 | 2025年1月 | 2025年2月 |
+| **トレーニングデータカットオフ** | 2025年8月 | 2025年7月 | 2025年7月 |
 
-## Legacy models
+注: Claude Opus 4.6とSonnet 4.5は、`context-1m-2025-08-07`ベータヘッダーを使用する場合、1Mトークンコンテキストウィンドウをサポートします。200Kトークンを超えるリクエストにはロングコンテキスト料金が適用されます。
 
-The following models are still available. Consider migrating to current models for improved performance:
+## レガシーモデル
 
-| Feature | Claude Sonnet 4.5 | Claude Opus 4.5 | Claude Opus 4.1 | Claude Sonnet 4 | Claude Opus 4 |
-|:--------|:------------------|:----------------|:----------------|:----------------|:--------------|
-| Pricing | $3 / input MTok, $15 / output MTok | $5 / input MTok, $25 / output MTok | $15 / input MTok, $75 / output MTok | $3 / input MTok, $15 / output MTok | $15 / input MTok, $75 / output MTok |
-| Extended thinking | Yes | Yes | Yes | Yes | Yes |
-| Context window | 200k tokens | 200k tokens | 200k tokens | 200k tokens | 200k tokens |
-| Max output | 64k tokens | 64k tokens | 32k tokens | 64k tokens | 32k tokens |
+以下のモデルはまだ利用可能ですが、パフォーマンス向上のため現行モデルへの移行をお勧めします：
 
-Claude 3.5 Sonnet was a previous generation model known for its excellent balance of intelligence and speed at an affordable price point. It excelled at coding, data analysis, and text generation tasks with strong cost performance.
+| 機能 | Claude Opus 4.5 | Claude Opus 4.1 | Claude Sonnet 4 | Claude Sonnet 3.7 | Claude Opus 4 | Claude Haiku 3 |
+|:--------|:----------------|:----------------|:----------------|:------------------|:--------------|:---------------|
+| **Claude API ID** | claude-opus-4-5-20251101 | claude-opus-4-1-20250805 | claude-sonnet-4-20250514 | claude-3-7-sonnet-20250219 | claude-opus-4-20250514 | claude-3-haiku-20240307 |
+| **料金** | $5 / 入力MTok、$25 / 出力MTok | $15 / 入力MTok、$75 / 出力MTok | $3 / 入力MTok、$15 / 出力MTok | $3 / 入力MTok、$15 / 出力MTok | $15 / 入力MTok、$75 / 出力MTok | $0.25 / 入力MTok、$1.25 / 出力MTok |
+| **拡張思考** | はい | はい | はい | はい | はい | いいえ |
+| **コンテキストウィンドウ** | 200Kトークン | 200Kトークン | 200Kトークン / 1Mトークン（ベータ） | 200Kトークン | 200Kトークン | 200Kトークン |
+| **最大出力** | 64Kトークン | 32Kトークン | 64Kトークン | 64Kトークン / 128Kトークン（ベータ） | 32Kトークン | 4Kトークン |
 
-Claude 3 Haiku was the fastest and most cost-effective model in the Claude 3 family, ideal for chatbots, real-time translation, and simple classification tasks requiring low latency.
+## プロンプトと出力のパフォーマンス
 
-## Prompt and output performance
+Claude 4モデルは以下の点で優れています：
+- **パフォーマンス**：推論、コーディング、多言語タスク、ロングコンテキスト処理、誠実性、画像処理においてトップクラスの結果。
+- **魅力的な応答**：Claudeモデルは、豊かで人間らしいインタラクションを必要とするアプリケーションに最適です。
+- **出力品質**：以前のモデル世代からClaude 4に移行する際、全体的なパフォーマンスの大幅な改善に気づくかもしれません。
 
-Claude 4 models excel in:
-- Performance: Top-tier results in reasoning, coding, multilingual tasks, long-context handling, honesty, and image processing.
-- Engaging responses: Claude models are ideal for applications that require rich, human-like interactions.
-- Output quality: When migrating from previous model generations to Claude 4, you may notice larger improvements in overall performance.
+## Claude 4.6への移行
+
+現在古いClaudeモデルを使用している場合は、インテリジェンスの向上と機能の強化を活用するために、Claude Opus 4.6への移行をお勧めします。

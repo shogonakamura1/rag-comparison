@@ -1,63 +1,317 @@
-# Pricing
+# 料金
 
-## Model Pricing
+Anthropicのモデルと機能の料金体系について
 
-| Model | Base Input Tokens | Output Tokens |
-|-------|------------------|---------------|
-| Claude Opus 4.6 | $5 / MTok | $25 / MTok |
-| Claude Opus 4.5 | $5 / MTok | $25 / MTok |
-| Claude Opus 4.1 | $15 / MTok | $75 / MTok |
-| Claude Opus 4 | $15 / MTok | $75 / MTok |
-| Claude Sonnet 4.6 | $3 / MTok | $15 / MTok |
-| Claude Sonnet 4.5 | $3 / MTok | $15 / MTok |
-| Claude Sonnet 4 | $3 / MTok | $15 / MTok |
-| Claude Haiku 4.5 | $1 / MTok | $5 / MTok |
-| Claude Haiku 3.5 | $0.80 / MTok | $4 / MTok |
-| Claude Haiku 3 | $0.25 / MTok | $1.25 / MTok |
+---
 
-MTok = Million tokens.
+このページでは、Anthropicのモデルと機能の詳細な料金情報を提供します。すべての価格はUSD（米ドル）表記です。
 
-## Prompt Caching Pricing
+最新の料金情報については、[claude.com/pricing](https://claude.com/pricing)をご覧ください。
 
-| Cache operation | Multiplier | Duration |
-|----------------|-----------|----------|
-| 5-minute cache write | 1.25x base input price | 5 minutes |
-| 1-hour cache write | 2x base input price | 1 hour |
-| Cache read (hit) | 0.1x base input price | Same as write duration |
+## モデル料金
 
-Cache hit costs 10% of standard input price. Caching pays off after one read for 5-minute, two reads for 1-hour duration.
+以下の表は、すべてのClaudeモデルの各利用ティアにおける料金を示しています:
 
-## Batch Processing Pricing
+| モデル | 基本入力トークン | 5分キャッシュ書き込み | 1時間キャッシュ書き込み | キャッシュヒット＆リフレッシュ | 出力トークン |
+|-------------------|-------------------|-----------------|-----------------|----------------------|---------------|
+| Claude Opus 4.6 | $5 / MTok | $6.25 / MTok | $10 / MTok | $0.50 / MTok | $25 / MTok |
+| Claude Opus 4.5 | $5 / MTok | $6.25 / MTok | $10 / MTok | $0.50 / MTok | $25 / MTok |
+| Claude Opus 4.1 | $15 / MTok | $18.75 / MTok | $30 / MTok | $1.50 / MTok | $75 / MTok |
+| Claude Opus 4 | $15 / MTok | $18.75 / MTok | $30 / MTok | $1.50 / MTok | $75 / MTok |
+| Claude Sonnet 4.6 | $3 / MTok | $3.75 / MTok | $6 / MTok | $0.30 / MTok | $15 / MTok |
+| Claude Sonnet 4.5 | $3 / MTok | $3.75 / MTok | $6 / MTok | $0.30 / MTok | $15 / MTok |
+| Claude Sonnet 4 | $3 / MTok | $3.75 / MTok | $6 / MTok | $0.30 / MTok | $15 / MTok |
+| Claude Sonnet 3.7 (非推奨) | $3 / MTok | $3.75 / MTok | $6 / MTok | $0.30 / MTok | $15 / MTok |
+| Claude Haiku 4.5 | $1 / MTok | $1.25 / MTok | $2 / MTok | $0.10 / MTok | $5 / MTok |
+| Claude Haiku 3.5 | $0.80 / MTok | $1 / MTok | $1.6 / MTok | $0.08 / MTok | $4 / MTok |
+| Claude Opus 3 (非推奨) | $15 / MTok | $18.75 / MTok | $30 / MTok | $1.50 / MTok | $75 / MTok |
+| Claude Haiku 3 | $0.25 / MTok | $0.30 / MTok | $0.50 / MTok | $0.03 / MTok | $1.25 / MTok |
 
-50% discount on both input and output tokens for asynchronous batch processing.
+MTok = 100万トークン。「基本入力トークン」列は標準入力料金を示し、「キャッシュ書き込み」と「キャッシュヒット」は[プロンプトキャッシング](/docs/ja/build-with-claude/prompt-caching)に固有のもので、「出力トークン」は出力料金を示します。プロンプトキャッシングは、さまざまなユースケースのコストを最適化するために、5分間（デフォルト）と1時間のキャッシュ期間の両方を提供しています。
 
-| Model | Batch input | Batch output |
-|-------|------------|-------------|
+上記の表は、プロンプトキャッシングに関する以下の料金乗数を反映しています:
+- 5分間キャッシュ書き込みトークンは、基本入力トークン価格の1.25倍
+- 1時間キャッシュ書き込みトークンは、基本入力トークン価格の2倍
+- キャッシュ読み取りトークンは、基本入力トークン価格の0.1倍
+
+## サードパーティプラットフォームの料金
+
+Claudeモデルは、[AWS Bedrock](/docs/ja/build-with-claude/claude-on-amazon-bedrock)、[Google Vertex AI](/docs/ja/build-with-claude/claude-on-vertex-ai)、および[Microsoft Foundry](/docs/ja/build-with-claude/claude-in-microsoft-foundry)で利用可能です。公式料金については、以下をご覧ください:
+
+- [AWS Bedrock料金](https://aws.amazon.com/bedrock/pricing/)
+- [Google Vertex AI料金](https://cloud.google.com/vertex-ai/generative-ai/pricing)
+- [Microsoft Foundry料金](https://azure.microsoft.com/en-us/pricing/details/ai-foundry/#pricing)
+
+**Claude 4.5モデル以降のリージョナルエンドポイント料金**
+
+Claude Sonnet 4.5およびHaiku 4.5以降、AWS BedrockとGoogle Vertex AIは2種類のエンドポイントを提供しています:
+- **グローバルエンドポイント**: 最大の可用性のためにリージョン間で動的にルーティング
+- **リージョナルエンドポイント**: 特定の地理的リージョン内でのデータルーティングを保証
+
+リージョナルエンドポイントには、グローバルエンドポイントに対して10%のプレミアムが含まれます。**Claude API（1P）はデフォルトでグローバルであり、この変更の影響を受けません。** Claude APIはグローバルのみです（他のプロバイダーのグローバルエンドポイントの提供および料金と同等です）。
+
+**対象範囲**: この料金体系は、Claude Sonnet 4.5、Haiku 4.5、およびすべての将来のモデルに適用されます。以前のモデル（Claude Sonnet 4、Opus 4、およびそれ以前のリリース）は既存の料金を維持します。
+
+## 機能別料金
+
+### データレジデンシー料金
+
+Claude Opus 4.6以降のモデルでは、`inference_geo`パラメータを使用してUS限定の推論を指定すると、入力トークン、出力トークン、キャッシュ書き込み、キャッシュ読み取りを含むすべてのトークン料金カテゴリに1.1倍の乗数が適用されます。グローバルルーティング（デフォルト）は標準料金を使用します。
+
+これはClaude API（1P）にのみ適用されます。サードパーティプラットフォームには独自のリージョナル料金があります — 詳細は[AWS Bedrock](https://aws.amazon.com/bedrock/pricing/)および[Google Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/pricing)をご覧ください。以前のモデルは`inference_geo`の設定に関係なく既存の料金を維持します。
+
+詳細については、[データレジデンシーのドキュメント](/docs/ja/build-with-claude/data-residency)をご覧ください。
+
+### バッチ処理
+
+Batch APIは、入力トークンと出力トークンの両方に50%の割引を適用して、大量のリクエストを非同期で処理できます。
+
+| モデル | バッチ入力 | バッチ出力 |
+|-------------------|------------------|-----------------|
 | Claude Opus 4.6 | $2.50 / MTok | $12.50 / MTok |
+| Claude Opus 4.5 | $2.50 / MTok | $12.50 / MTok |
+| Claude Opus 4.1 | $7.50 / MTok | $37.50 / MTok |
+| Claude Opus 4 | $7.50 / MTok | $37.50 / MTok |
 | Claude Sonnet 4.6 | $1.50 / MTok | $7.50 / MTok |
+| Claude Sonnet 4.5 | $1.50 / MTok | $7.50 / MTok |
+| Claude Sonnet 4 | $1.50 / MTok | $7.50 / MTok |
+| Claude Sonnet 3.7 (非推奨) | $1.50 / MTok | $7.50 / MTok |
 | Claude Haiku 4.5 | $0.50 / MTok | $2.50 / MTok |
+| Claude Haiku 3.5 | $0.40 / MTok | $2 / MTok |
+| Claude Opus 3 (非推奨) | $7.50 / MTok | $37.50 / MTok |
+| Claude Haiku 3 | $0.125 / MTok | $0.625 / MTok |
 
-## Fast Mode Pricing
+バッチ処理の詳細については、[バッチ処理のドキュメント](/docs/ja/build-with-claude/batch-processing)をご覧ください。
 
-Fast mode for Claude Opus 4.6 provides faster output at 6x standard rates: $30/MTok input, $150/MTok output.
+### ロングコンテキスト料金
 
-## Tool Pricing
+Claude Opus 4.6、Sonnet 4.5、またはSonnet 4で[100万トークンコンテキストウィンドウを有効化](/docs/ja/build-with-claude/context-windows#1m-token-context-window)して使用する場合、200Kの入力トークンを超えるリクエストには自動的にプレミアムロングコンテキスト料金が適用されます:
 
-- Web search: $10 per 1,000 searches plus standard token costs
-- Web fetch: No additional charges beyond standard token costs
-- Code execution: Free when used with web search/fetch. Otherwise $0.05/hour per container (1,550 free hours/month)
-- Bash tool: Adds 245 input tokens per call
-- Text editor tool: Adds 700 input tokens per call
-- Computer use: 735 input tokens per tool definition
+100万トークンコンテキストウィンドウは現在、[利用ティア](/docs/ja/api/rate-limits)4の組織およびカスタムレート制限を持つ組織向けにベータ版として提供されています。100万トークンコンテキストウィンドウは、Claude Opus 4.6、Sonnet 4.5、およびSonnet 4でのみ利用可能です。
 
-## Long Context Pricing
+| モデル | ≤ 200K入力トークン | > 200K入力トークン |
+|-------|-----------------------------------|-------------------------------------|
+| Claude Opus 4.6 | 入力: $5 / MTok | 入力: $10 / MTok |
+| | 出力: $25 / MTok | 出力: $37.50 / MTok |
+| Claude Sonnet 4.5 / 4 | 入力: $3 / MTok | 入力: $6 / MTok |
+| | 出力: $15 / MTok | 出力: $22.50 / MTok |
 
-Opus 4.6 and Sonnet 4.6 include the full 1M token context window at standard pricing. No premium for longer inputs.
+ロングコンテキスト料金は他の料金修正と組み合わせて適用されます:
+- [Batch APIの50%割引](#batch-processing)はロングコンテキスト料金に適用されます
+- [プロンプトキャッシングの乗数](#model-pricing)はロングコンテキスト料金の上に適用されます
+- [データレジデンシーの1.1倍乗数](#data-residency-pricing)はロングコンテキスト料金の上に適用されます
 
-## Third-Party Platforms
+ベータフラグが有効になっていても、200K未満の入力トークンのリクエストは標準料金で課金されます。リクエストが200Kの入力トークンを超える場合、すべてのトークンにプレミアム料金が適用されます。
 
-Available on AWS Bedrock, Google Vertex AI, and Microsoft Foundry. Regional endpoints include a 10% premium over global endpoints (for Claude 4.5+ models).
+200Kのしきい値は入力トークン（キャッシュ読み取り/書き込みを含む）のみに基づいています。出力トークン数は料金ティアの選択に影響しませんが、入力しきい値を超えた場合、出力トークンはより高い料金で課金されます。
 
-## Rate Limits
+APIリクエストが100万コンテキストウィンドウ料金で課金されたかどうかを確認するには、APIレスポンスの`usage`オブジェクトを確認し、以下を合計して総入力トークンを計算します:
+- `input_tokens`
+- `cache_creation_input_tokens`（プロンプトキャッシングを使用している場合）
+- `cache_read_input_tokens`（プロンプトキャッシングを使用している場合）
 
-Rate limits vary by usage tier (Tier 1-4 and Enterprise). Enterprise customers can negotiate custom limits.
+合計が200,000トークンを超える場合、リクエスト全体が100万コンテキスト料金で課金されています。
+
+### ツール使用料金
+
+ツール使用リクエストは以下に基づいて料金が設定されます:
+1. モデルに送信される入力トークンの総数（`tools`パラメータを含む）
+2. 生成される出力トークンの数
+3. サーバー側ツールの場合、使用量に基づく追加料金（例: 実行された検索ごとのウェブ検索料金）
+
+クライアント側ツールは他のClaude APIリクエストと同じ料金で、サーバー側ツールは特定の使用量に基づいて追加料金が発生する場合があります。
+
+ツール使用による追加トークンは以下から生じます:
+- APIリクエストの`tools`パラメータ（ツール名、説明、スキーマ）
+- APIリクエストとレスポンスの`tool_use`コンテンツブロック
+- APIリクエストの`tool_result`コンテンツブロック
+
+`tools`を使用すると、ツール使用を可能にする特別なシステムプロンプトが自動的に含まれます。各モデルに必要なツール使用トークンの数は以下の通りです。
+
+| モデル | ツール選択 | ツール使用システムプロンプトのトークン数 |
+|--------------------------|------------------------------------------------------|---------------------------------------------|
+| Claude Opus 4.6 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Opus 4.5 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Opus 4.1 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Opus 4 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 4.6 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 4.5 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 4 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Sonnet 3.7 (非推奨) | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Haiku 4.5 | `auto`, `none` / `any`, `tool` | 346トークン / 313トークン |
+| Claude Haiku 3.5 | `auto`, `none` / `any`, `tool` | 264トークン / 340トークン |
+| Claude Opus 3 (非推奨) | `auto`, `none` / `any`, `tool` | 530トークン / 281トークン |
+| Claude Sonnet 3 | `auto`, `none` / `any`, `tool` | 159トークン / 235トークン |
+| Claude Haiku 3 | `auto`, `none` / `any`, `tool` | 264トークン / 340トークン |
+
+これらのトークン数は、通常の入力トークンと出力トークンに追加されて、リクエストの総コストが計算されます。
+
+ツール使用の実装とベストプラクティスの詳細については、[ツール使用のドキュメント](/docs/ja/agents-and-tools/tool-use/overview)をご覧ください。
+
+### 特定ツールの料金
+
+#### Bashツール
+
+bashツールはAPIコールに**245入力トークン**を追加します。
+
+以下によって追加トークンが消費されます:
+- コマンド出力（stdout/stderr）
+- エラーメッセージ
+- 大きなファイルコンテンツ
+
+#### コード実行ツール
+
+**ウェブ検索またはウェブフェッチと共に使用する場合、コード実行は無料です。** `web_search_20260209`または`web_fetch_20260209`がAPIリクエストに含まれている場合、標準の入出力トークンコストを超えるコード実行ツール呼び出しに対する追加料金はありません。
+
+これらのツールなしで使用する場合、コード実行は実行時間で請求され、トークン使用量とは別に追跡されます:
+
+- 実行時間は最低5分
+- 各組織には月額**1,550時間の無料使用枠**が提供されます
+- 1,550時間を超える追加使用は**1時間あたり$0.05、コンテナごと**で請求されます
+- リクエストにファイルが含まれている場合、ツールが呼び出されなくても、ファイルがコンテナにプリロードされるため実行時間が課金されます
+
+#### テキストエディタツール
+
+テキストエディタツールはClaudeで使用される他のツールと同じ料金体系を使用します。使用しているClaudeモデルに基づく標準の入出力トークン料金に従います。
+
+基本トークンに加えて、テキストエディタツールには以下の追加入力トークンが必要です:
+
+| ツール | 追加入力トークン |
+| ----------------------------------------- | --------------------------------------- |
+| `text_editor_20250429` (Claude 4.x) | 700トークン |
+| `text_editor_20250124` (Claude Sonnet 3.7 (非推奨)) | 700トークン |
+
+#### Web検索ツール
+
+Web検索使用量はトークン使用量に加えて課金されます。
+
+Web検索はClaude API上で**1,000検索あたり$10**で利用可能です。さらに、検索生成コンテンツに対する標準トークンコストが発生します。会話全体で取得されたWeb検索結果は、1回のターン内で実行された検索イテレーションおよびその後の会話ターンで、入力トークンとしてカウントされます。
+
+各Web検索は、返される結果の数に関係なく1回の使用としてカウントされます。Web検索中にエラーが発生した場合、Web検索は課金されません。
+
+#### Webフェッチツール
+
+Webフェッチ使用量には標準トークンコストを超える**追加料金はありません**。
+
+Webフェッチツールは、Claude API上で**追加コストなし**で利用可能です。会話コンテキストの一部となる取得されたコンテンツの標準トークンコストのみを支払います。
+
+大量のコンテンツを誤って取得してトークンを過度に消費することを防ぐため、ユースケースと予算の考慮事項に基づいて適切な制限を設定するには`max_content_tokens`パラメータを使用してください。
+
+一般的なコンテンツのトークン使用例:
+- 平均的なWebページ（10 kB）: ~2,500トークン
+- 大きなドキュメントページ（100 kB）: ~25,000トークン
+- 研究論文PDF（500 kB）: ~125,000トークン
+
+#### コンピュータ使用ツール
+
+コンピュータ使用は標準の[ツール使用料金](/docs/ja/agents-and-tools/tool-use/overview#pricing)に従います。コンピュータ使用ツールを使用する場合:
+
+**システムプロンプトオーバーヘッド**: コンピュータ使用ベータは466〜499トークンをシステムプロンプトに追加します
+
+**コンピュータ使用ツールトークン使用量**:
+
+| モデル | ツール定義あたりの入力トークン |
+| ----- | -------------------------------- |
+| Claude 4.xモデル | 735トークン |
+| Claude Sonnet 3.7 (非推奨) | 735トークン |
+
+**追加のトークン消費**:
+- スクリーンショット画像（[ビジョン料金](/docs/ja/build-with-claude/vision)を参照）
+- Claudeに返されるツール実行結果
+
+## エージェントユースケースの料金例
+
+エージェントアプリケーションの料金を理解することは、Claudeで構築する際に非常に重要です。
+
+### カスタマーサポートエージェントの例
+
+カスタマーサポートエージェントを構築する場合、10,000件のサポートチケットを処理する場合の計算例:
+- 会話あたり平均約3,700トークン
+- Claude Opus 4.6を使用（入力$5/MTok、出力$25/MTok）
+- 合計コスト: 10,000チケットあたり約$37.00
+
+### 一般的なエージェントワークフローの料金
+
+複数のステップを持つより複雑なエージェントアーキテクチャの場合:
+
+1. **初期リクエスト処理**
+   - 一般的な入力: 500〜1,000トークン
+   - 処理コスト: リクエストあたり約$0.003
+
+2. **メモリとコンテキストの取得**
+   - 取得されるコンテキスト: 2,000〜5,000トークン
+   - 取得あたりのコスト: 操作あたり約$0.015
+
+3. **アクション計画と実行**
+   - 計画トークン: 1,000〜2,000
+   - 実行フィードバック: 500〜1,000
+   - 合計コスト: アクションあたり約$0.045
+
+### コスト最適化戦略
+
+Claudeでエージェントを構築する際:
+
+1. **適切なモデルを使用する**: シンプルなタスクにはHaikuを、複雑な推論にはSonnetを選択
+2. **プロンプトキャッシングを実装する**: 繰り返しのコンテキストのコストを削減
+3. **バッチ操作**: 時間に敏感でないタスクにはBatch APIを使用
+4. **使用パターンを監視する**: トークン消費を追跡して最適化の機会を特定
+
+## その他の料金に関する考慮事項
+
+### レート制限
+
+レート制限は利用ティアによって異なり、実行できるリクエスト数に影響します:
+
+- **ティア1**: 基本的な制限のエントリーレベルの利用
+- **ティア2**: 成長するアプリケーション向けの増加した制限
+- **ティア3**: 確立されたアプリケーション向けのより高い制限
+- **ティア4**: 最大の標準制限
+- **エンタープライズ**: カスタム制限が利用可能
+
+レート制限の詳細については、[レート制限のドキュメント](/docs/ja/api/rate-limits)をご覧ください。
+
+### ボリュームディスカウント
+
+大量利用のユーザーにはボリュームディスカウントが利用可能な場合があります。これらはケースバイケースで交渉されます。
+
+- 標準ティアは上記の料金を使用
+- エンタープライズのお客様はカスタム料金について[営業にお問い合わせ](mailto:sales@anthropic.com)ください
+- 学術・研究向けの割引が利用可能な場合があります
+
+### エンタープライズ料金
+
+特定のニーズを持つエンタープライズのお客様向け:
+
+- カスタムレート制限
+- ボリュームディスカウント
+- 専用サポート
+- カスタム条件
+
+エンタープライズ料金のオプションについては、[sales@anthropic.com](mailto:sales@anthropic.com)または[Claudeコンソール](/settings/limits)から営業チームにお問い合わせください。
+
+## 請求と支払い
+
+- 請求は実際の使用量に基づいて毎月計算されます
+- 支払いはUSDで処理されます
+- クレジットカードおよび請求書払いのオプションが利用可能です
+- 使用量の追跡は[Claudeコンソール](/)で利用可能です
+
+## よくある質問
+
+**トークン使用量はどのように計算されますか？**
+
+トークンはモデルが処理するテキストの単位です。大まかな目安として、英語では1トークンは約4文字または0.75語に相当します。正確な数は言語やコンテンツの種類によって異なります。
+
+**無料ティアやトライアルはありますか？**
+
+新規ユーザーには、APIをテストするための少額の無料クレジットが提供されます。エンタープライズ評価のための延長トライアルについては、[営業にお問い合わせ](mailto:sales@anthropic.com)ください。
+
+**割引はどのように組み合わされますか？**
+
+Batch APIとプロンプトキャッシングの割引は組み合わせることができます。例えば、両方の機能を一緒に使用すると、標準のAPI呼び出しと比較して大幅なコスト削減が得られます。
+
+**どのような支払い方法が利用できますか？**
+
+標準アカウントでは主要なクレジットカードを受け付けています。エンタープライズのお客様は請求書払いやその他の支払い方法を手配できます。
+
+料金に関するその他のご質問は、[support@anthropic.com](mailto:support@anthropic.com)までお問い合わせください。

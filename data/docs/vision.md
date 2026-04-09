@@ -1,48 +1,207 @@
-# Vision
+# ビジョン
 
-Claude's vision capabilities allow it to understand and analyze images, opening up exciting possibilities for multimodal interaction.
+Claudeのビジョン機能により、画像の理解と分析が可能になり、マルチモーダルインタラクションのエキサイティングな可能性が開かれます。
 
-## How to use vision
+---
 
-Use Claude's vision capabilities through:
-- claude.ai: Upload an image like you would a file, or drag and drop an image directly into the chat window.
-- The Console Workbench: A button to add images appears at the top right of every User message block.
-- API request: Include images in your API calls using base64 encoding, URL references, or the Files API.
+このガイドでは、Claudeで画像を扱う方法について、ベストプラクティス、コード例、留意すべき制限事項を含めて説明します。
 
-## Basics and limits
+---
 
-You can include multiple images in a single request: up to 20 for claude.ai, and up to 600 for API requests (100 for models with a 200k-token context window). Claude analyzes all provided images when formulating its response. This can be helpful for comparing or contrasting images.
+## ビジョンの使い方
 
-If you submit an image larger than 8000x8000 px, it is rejected. If you submit more than 20 images in one API request, this limit is 2000x2000 px.
+Claudeのビジョン機能は以下の方法で使用できます:
 
-## Image format support
+- [claude.ai](https://claude.ai/)。ファイルをアップロードするように画像をアップロードするか、チャットウィンドウに直接画像をドラッグ＆ドロップします。
+- [Console Workbench](/workbench)。すべてのUserメッセージブロックの右上に画像を追加するボタンが表示されます。
+- **APIリクエスト**。このガイドの例を参照してください。
 
-Claude currently supports JPEG, PNG, GIF, and WebP image formats:
-- image/jpeg
-- image/png
-- image/gif
-- image/webp
+---
 
-## Image size limits
+## アップロードする前に
 
-- API: Maximum 5 MB per image
-- claude.ai: Maximum 10 MB per image
+### 基本と制限
 
-## Ensuring image quality
+1回のリクエストに複数の画像を含めることができます（[claude.ai](https://claude.ai/)では最大20枚、APIリクエストでは最大100枚）。Claudeは応答を作成する際に、提供されたすべての画像を分析します。これは画像の比較や対照に役立ちます。
 
-When providing images to Claude, keep the following in mind for best results:
-- Image format: Use a supported image format: JPEG, PNG, GIF, or WebP.
-- Image clarity: Ensure images are clear and not too blurry or pixelated.
-- Text: If the image contains important text, make sure it's legible and not too small.
+8000x8000 pxを超える画像を送信すると、拒否されます。1回のAPIリクエストで20枚以上の画像を送信する場合、この制限は2000x2000 pxになります。
 
-## Limitations
+APIはリクエストあたり100枚の画像をサポートしていますが、標準エンドポイントには[32MBのリクエストサイズ制限](/docs/ja/api/overview#request-size-limits)があります。
 
-While Claude's image understanding capabilities are cutting-edge, there are some limitations:
-- People identification: Claude cannot be used to name people in images and refuses to do so.
-- Accuracy: Claude may hallucinate or make mistakes when interpreting low-quality, rotated, or very small images under 200 pixels.
-- Spatial reasoning: Claude's spatial reasoning abilities are limited. It may struggle with tasks requiring precise localization or layouts.
-- Counting: Claude can give approximate counts of objects in an image but may not always be precisely accurate.
-- AI generated images: Claude does not know if an image is AI-generated and may be incorrect if asked.
-- Inappropriate content: Claude does not process inappropriate or explicit images that violate the Acceptable Use Policy.
-- Healthcare applications: While Claude can analyze general medical images, it is not designed to interpret complex diagnostic scans.
-- Image generation: Claude is an image understanding model only. It can interpret and analyze images, but it cannot generate, produce, edit, manipulate, or create images.
+### 画像サイズの評価
+
+最適なパフォーマンスのために、画像が大きすぎる場合はアップロード前にリサイズすることをお勧めします。画像の長辺が1568ピクセルを超える場合、または画像が約1,600トークンを超える場合、アスペクト比を維持しながらサイズ制限内に収まるまで縮小されます。
+
+入力画像が大きすぎてリサイズが必要な場合、追加のモデルパフォーマンスを得ることなく[最初のトークンまでの時間](/docs/ja/about-claude/glossary)のレイテンシが増加します。いずれかの辺が200ピクセル未満の非常に小さな画像は、パフォーマンスが低下する可能性があります。
+
+[最初のトークンまでの時間](/docs/ja/about-claude/glossary)を改善するために、画像を1.15メガピクセル以下（かつ両方の次元で1568ピクセル以内）にリサイズすることをお勧めします。
+
+以下は、一般的なアスペクト比でリサイズされないAPIが受け入れる最大画像サイズの表です。Claude Opus 4.6では、これらの画像は約1,600トークンを使用し、約$4.80/1K画像のコストがかかります。
+
+| アスペクト比 | 画像サイズ |
+| ------------ | ------------ |
+| 1:1 | 1092x1092 px |
+| 3:4 | 951x1268 px |
+| 2:3 | 896x1344 px |
+| 9:16 | 819x1456 px |
+| 1:2 | 784x1568 px |
+
+### 画像コストの計算
+
+リクエストに含める各画像は、トークン使用量にカウントされます。おおよそのコストを計算するには、画像トークンの概算数に使用している[モデルのトークン単価](https://claude.com/pricing)を掛けます。
+
+画像のリサイズが不要な場合、次のアルゴリズムで使用トークン数を推定できます: `tokens = (width px * height px)/750`
+
+以下は、Claude Opus 4.6の入力トークン単価（100万トークンあたり$3）に基づく、APIのサイズ制約内のさまざまな画像サイズのおおよそのトークン化とコストの例です:
+
+| 画像サイズ | トークン数 | コスト / 画像 | コスト / 1K画像 |
+| ----------------------------- | ------------ | ------------ | ---------------- |
+| 200x200 px(0.04メガピクセル) | ~54 | ~$0.00016 | ~$0.16 |
+| 1000x1000 px(1メガピクセル) | ~1334 | ~$0.004 | ~$4.00 |
+| 1092x1092 px(1.19メガピクセル) | ~1590 | ~$0.0048 | ~$4.80 |
+
+### 画像品質の確保
+
+Claudeに画像を提供する際、最良の結果を得るために以下の点に留意してください:
+
+- **画像フォーマット**: サポートされている画像フォーマットを使用してください: JPEG、PNG、GIF、またはWebP。
+- **画像の鮮明さ**: 画像が鮮明で、ぼやけすぎたりピクセル化されていないことを確認してください。
+- **テキスト**: 画像に重要なテキストが含まれている場合、読みやすく小さすぎないことを確認してください。テキストを拡大するためだけに重要な視覚的コンテキストをトリミングすることは避けてください。
+
+---
+
+## プロンプトの例
+
+テキストベースのClaudeとのインタラクションでうまく機能する[プロンプト技術](/docs/ja/build-with-claude/prompt-engineering/overview)の多くは、画像ベースのプロンプトにも適用できます。
+
+これらの例は、画像を含むベストプラクティスのプロンプト構造を示しています。
+
+ドキュメントクエリの配置と同様に、Claudeは画像がテキストの前に来る場合に最も良く機能します。テキストの後に配置された画像やテキストに挿入された画像でも良好なパフォーマンスを発揮しますが、ユースケースが許す場合は、画像→テキストの構造をお勧めします。
+
+### プロンプト例について
+
+Claudeに画像を提供する方法は3つあります:
+
+1. `image`コンテンツブロック内のbase64エンコード画像として
+2. オンラインでホストされている画像へのURL参照として
+3. Files API を使用（一度アップロードして複数回使用）
+
+### 例: 1枚の画像
+
+画像に関する質問や画像を使用するタスクの指示よりも、プロンプトの前の方に画像を配置するのが最善です。
+
+| ロール | コンテンツ |
+| ---- | ------------------------------ |
+| User | [Image] Describe this image. |
+
+### 例: 複数の画像
+
+複数の画像がある場合は、各画像を`Image 1:`、`Image 2:`のように紹介します。画像間や画像とプロンプトの間に改行は必要ありません。
+
+| ロール | コンテンツ |
+| ---- | ------------------------------------------------------------------------- |
+| User | Image 1: [Image 1] Image 2: [Image 2] How are these images different? |
+
+### 例: システムプロンプト付きの複数画像
+
+| コンテンツ | |
+| ------- | ------------------------------------------------------------------------- |
+| System | Respond only in Spanish. |
+| User | Image 1: [Image 1] Image 2: [Image 2] How are these images different? |
+
+### 例: 2回の会話ターンにわたる4枚の画像
+
+Claudeのビジョン機能は、画像とテキストを組み合わせたマルチモーダル会話で真価を発揮します。Claudeとの拡張的なやり取りの中で、いつでも新しい画像やフォローアップの質問を追加できます。これにより、反復的な画像分析、比較、またはビジュアルと他の知識の組み合わせのための強力なワークフローが可能になります。
+
+| ロール | コンテンツ |
+| --------- | ------------------------------------------------------------------------------------ |
+| User | Image 1: [Image 1] Image 2: [Image 2] How are these images different? |
+| Assistant | [Claudeの応答] |
+| User | Image 1: [Image 3] Image 2: [Image 4] Are these images similar to the first two? |
+| Assistant | [Claudeの応答] |
+
+APIを使用する場合、標準的な[マルチターン会話](/docs/ja/api/messages)構造の一部として、`user`ロールのMessagesの配列に新しい画像を挿入するだけです。
+
+---
+
+## 制限事項
+
+Claudeの画像理解機能は最先端ですが、いくつかの制限事項があります:
+
+- **人物の識別**: Claudeは画像内の人物を識別（つまり名前を特定）するために[使用することはできません](https://www.anthropic.com/legal/aup)。そのような要求は拒否されます。
+- **精度**: Claudeは、低品質、回転した、または200ピクセル未満の非常に小さな画像を解釈する際に、ハルシネーションや誤りが発生する可能性があります。
+- **空間推論**: Claudeの空間推論能力には限界があります。正確な位置特定やレイアウトを必要とするタスク（アナログ時計の文字盤の読み取りやチェスの駒の正確な位置の説明など）では困難が生じる場合があります。
+- **カウント**: Claudeは画像内のオブジェクトのおおよその数を提供できますが、特に多数の小さなオブジェクトの場合、常に正確であるとは限りません。
+- **AI生成画像**: Claudeは画像がAI生成かどうかを判断できず、質問された場合に誤る可能性があります。偽の画像や合成画像の検出にClaudeを頼らないでください。
+- **不適切なコンテンツ**: Claudeは[利用規約](https://www.anthropic.com/legal/aup)に違反する不適切または露骨な画像を処理しません。
+- **医療アプリケーション**: Claudeは一般的な医療画像を分析できますが、CTやMRIなどの複雑な診断スキャンの解釈を目的として設計されていません。Claudeの出力は、専門的な医療アドバイスや診断の代替と見なすべきではありません。
+
+特に重要なユースケースでは、Claudeの画像解釈を常に慎重にレビューし検証してください。人間の監視なしに、完璧な精度や機密性の高い画像分析を必要とするタスクにClaudeを使用しないでください。
+
+---
+
+## FAQ
+
+### Claudeはどの画像ファイル形式をサポートしていますか？
+
+Claudeは現在、JPEG、PNG、GIF、WebP画像形式をサポートしています。具体的には:
+- `image/jpeg`
+- `image/png`
+- `image/gif`
+- `image/webp`
+
+### Claudeは画像URLを読み取れますか？
+
+はい、ClaudeはAPIのURL画像ソースブロックを使用して、URLから画像を処理できるようになりました。APIリクエストで「base64」の代わりに「url」ソースタイプを使用するだけです。
+
+### アップロードできる画像ファイルサイズに制限はありますか？
+
+はい、制限があります:
+- API: 画像1枚あたり最大5MB
+- claude.ai: 画像1枚あたり最大10MB
+
+これらの制限を超える画像は拒否され、APIを使用するとエラーが返されます。
+
+### 1回のリクエストに何枚の画像を含めることができますか？
+
+画像の制限は以下の通りです:
+- Messages API: 1リクエストあたり最大100枚
+- claude.ai: 1ターンあたり最大20枚
+
+これらの制限を超えるリクエストは拒否され、エラーが返されます。
+
+### Claudeは画像のメタデータを読み取りますか？
+
+いいえ、Claudeは渡された画像からメタデータを解析したり受信したりしません。
+
+### アップロードした画像を削除できますか？
+
+いいえ。画像のアップロードは一時的なものであり、APIリクエストの期間を超えて保存されることはありません。アップロードされた画像は処理後に自動的に削除されます。
+
+### 画像アップロードのデータプライバシーに関する詳細はどこで確認できますか？
+
+アップロードされた画像やその他のデータの取り扱いについては、プライバシーポリシーページをご参照ください。アップロードされた画像をモデルのトレーニングに使用することはありません。
+
+### Claudeの画像解釈が間違っているように見える場合はどうすればよいですか？
+
+Claudeの画像解釈が正しくないと思われる場合:
+1. 画像が鮮明で高品質であり、正しい向きであることを確認してください。
+2. プロンプトエンジニアリングのテクニックを試して結果を改善してください。
+3. 問題が解決しない場合は、claude.aiで出力にフラグを付ける（高評価/低評価）か、サポートチームにお問い合わせください。
+
+皆様のフィードバックが改善に役立ちます。
+
+### Claudeは画像を生成または編集できますか？
+
+いいえ、Claudeは画像理解モデルのみです。画像を解釈・分析することはできますが、画像の生成、作成、編集、操作、制作を行うことはできません。
+
+---
+
+## ビジョンをさらに深く探る
+
+Claudeで画像を使った構築を始める準備はできましたか？以下にいくつかの役立つリソースをご紹介します:
+
+- [マルチモーダルクックブック](https://platform.claude.com/cookbook/multimodal-getting-started-with-vision): このクックブックには、[画像の使い始め方](https://platform.claude.com/cookbook/multimodal-getting-started-with-vision)や、画像で最高品質のパフォーマンスを確保するための[ベストプラクティステクニック](https://platform.claude.com/cookbook/multimodal-best-practices-for-vision)に関するヒントが含まれています。[チャートやグラフの解釈・分析](https://platform.claude.com/cookbook/multimodal-reading-charts-graphs-powerpoints)や[フォームからのコンテンツ抽出](https://platform.claude.com/cookbook/multimodal-how-to-transcribe-text)などのタスクを実行するために、画像を使ってClaudeに効果的にプロンプトを与える方法をご覧ください。
+- [APIリファレンス](/docs/ja/api/messages): Messages APIのドキュメントをご覧ください。[画像を含むAPIコールの例](/docs/ja/build-with-claude/working-with-messages#vision)も含まれています。
+
+その他のご質問がございましたら、お気軽に[サポートチーム](https://support.claude.com/)までお問い合わせください。また、[開発者コミュニティ](https://www.anthropic.com/discord)に参加して、他のクリエイターとつながり、Anthropicの専門家からサポートを受けることもできます。
