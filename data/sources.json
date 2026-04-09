@@ -21,9 +21,9 @@
       "local_path": "data/docs/streaming.md"
     },
     {
-      "url": "https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback",
-      "name": "Constitutional AI",
-      "local_path": "data/docs/constitutional_ai.md"
+      "url": "https://platform.claude.com/docs/ja/build-with-claude/structured-outputs",
+      "name": "Structured Outputs",
+      "local_path": "data/docs/structured_outputs.md"
     },
     {
       "url": "https://platform.claude.com/docs/en/docs/build-with-claude/extended-thinking",
