@@ -35,9 +35,9 @@
 | レイヤー | 技術 | バージョン | 根拠 |
 |---------|------|----------|------|
 | 言語 | Python | 3.11+ | ステアリング指定 |
-| ベクトルDB | chromadb | latest | 内蔵Embedding付き、ローカル完結 |
-| Embedding | all-MiniLM-L6-v2 | ChromaDB内蔵 | 無料、追加設定不要 |
-| LLM | google-generativeai | latest | Gemini API（ユーザー指定） |
+| ベクトルDB | chromadb | latest | ローカル完結、SQLite + HNSW |
+| Embedding | sentence-transformers + multilingual-e5-large | latest | 100言語対応・1024次元、クロスリンガル検索に強い（v3で `all-MiniLM-L6-v2` から変更） |
+| LLM | google-generativeai | latest | Gemini API（gemini-2.5-flash） |
 | スクレイピング | requests + beautifulsoup4 | latest | 軽量、標準的 |
 | 設定管理 | python-dotenv | latest | .env読み込み |
 
@@ -45,10 +45,15 @@
 ```
 chromadb
 google-generativeai
+sentence-transformers
 requests
 beautifulsoup4
 python-dotenv
+pytest
 ```
+
+### LLM選択について
+当初は Claude API（Anthropic SDK）を採用する設計だったが、コスト・APIキー入手しやすさの観点から **Gemini API** に変更された。詳細は [decisions/0001-llm-choice.md](decisions/0001-llm-choice.md) を参照。
 
 ---
 
@@ -64,7 +69,8 @@ class Config:
     gemini_api_key: str
     chunk_size: int = 500
     chunk_overlap: int = 100
-    top_k: int = 5
+    top_k: int = 8                       # v3で5から拡大（取りこぼし防止）
+    distance_threshold: float = 0.45     # v3で導入（無関係チャンクを除外）
     chroma_persist_dir: str = "./chroma_db"
     collection_name: str = "claude_docs"
 
@@ -107,32 +113,48 @@ def load_sources(sources_path: str = "data/sources.json") -> list[Document]:
 @dataclass
 class Chunk:
     text: str
-    metadata: dict  # {"source_url": str, "chunk_index": int}
+    metadata: dict  # {"source_url": str, "chunk_index": int, "block_type": "text" | "table"}
 
 def split_text(document: Document, chunk_size: int = 500, overlap: int = 100) -> list[Chunk]:
-    """ドキュメントをオーバーラップ付きチャンクに分割"""
+    """ドキュメントをチャンクに分割
+
+    v7: 表認識チャンキング
+    - Markdownの表（| で始まる連続行）を検出した場合、表全体を1チャンクとして保持する
+    - 表の直前のセクション見出し（##）も同じチャンクに含める
+    - 通常テキストは従来通り chunk_size でオーバーラップ付き分割
+    """
     ...
 ```
 
 **処理詳細**:
-- 文字数ベースの固定長分割（文境界を考慮）
-- オーバーラップ: 前チャンクの末尾overlap文字を次チャンクの先頭に含める
-- 各チャンクに`source_url`と`chunk_index`のメタデータを付与
+- テキストを「表ブロック」と「通常テキストブロック」に分解
+- 表ブロック: chunk_sizeを無視して1チャンクにまとめる（行・列の対応関係を保持）
+- 通常テキストブロック: 文字数ベースで chunk_size 文字ごとに分割し、隣接チャンク間に overlap 文字の重複を設ける
+- 各チャンクに `source_url`、`chunk_index`、`block_type`（"text" or "table"）のメタデータを付与
 
 ### コンポーネント 4: vectorstore.py — ベクトルストア管理
 **対応要件**: 3.1, 3.2, 3.3
 
 ```python
+MODEL_NAME = "intfloat/multilingual-e5-large"
+
+class E5EmbeddingFunction(EmbeddingFunction):
+    """multilingual-e5-large 用のカスタムEmbedding関数。
+    query/passage プレフィックスで検索精度を向上させる。"""
+    def __init__(self):
+        self.model = SentenceTransformer(MODEL_NAME)
+        self._mode = "passage"  # add_chunks時は passage、search時は query に切替
+
 class VectorStore:
     def __init__(self, persist_dir: str = "./chroma_db", collection_name: str = "claude_docs"):
-        """ChromaDB PersistentClientを初期化"""
+        """ChromaDB PersistentClientを初期化（E5EmbeddingFunctionを使用）"""
         ...
 
     def add_chunks(self, chunks: list[Chunk]) -> None:
-        """チャンクをChromaDBに追加（内蔵Embeddingで自動ベクトル化）"""
+        """チャンクをChromaDBに追加（multilingual-e5-largeでベクトル化）"""
         ...
 
-    def search(self, query: str, top_k: int = 5) -> list[dict]:
+    def search(self, query: str, top_k: int = 8) -> list[dict]:
         """クエリに類似するチャンクをtop_k件返す。各dictはtext, metadata, distanceを含む"""
         ...
 
@@ -143,9 +165,9 @@ class VectorStore:
 
 **処理詳細**:
 - `chromadb.PersistentClient(path=persist_dir)` で永続化
-- `collection.add(documents=..., metadatas=..., ids=...)` でチャンク追加
-- `collection.query(query_texts=[query], n_results=top_k)` で検索
-- IDはURL+チャンクインデックスのハッシュで一意性を保証
+- カスタムEmbedding関数 `E5EmbeddingFunction` を使用（v3で導入）
+- 検索時は `_mode = "query"`、保存時は `_mode = "passage"` を自動切替
+- IDはURL+チャンクインデックスのSHA-256ハッシュで一意性を保証
 
 ### コンポーネント 5: rag.py — RAGパイプライン
 **対応要件**: 4.1, 4.2, 4.3
@@ -157,15 +179,32 @@ class RAGResponse:
     sources: list[str]  # ソースURLリスト
 
 class RAGPipeline:
-    def __init__(self, config: Config, vectorstore: VectorStore):
+    def __init__(
+        self,
+        config: Config,
+        vectorstore: VectorStore,
+        translate_query: bool = False,
+        distance_threshold: float | None = None,
+    ):
+        # gemini-2.5-flash を使用
         ...
 
     def ask(self, question: str) -> RAGResponse:
-        """質問に対してRAGで回答を生成"""
+        """質問に対してRAGで回答を生成
+        1. (オプション) クエリ翻訳
+        2. ベクトルストア検索 (top_k件)
+        3. 距離フィルタリング (distance_threshold以下のみ採用)
+        4. プロンプト構築 + Gemini API呼び出し
+        5. ソースURL重複除去
+        """
+        ...
+
+    def _filter_by_distance(self, results: list[dict]) -> list[dict]:
+        """距離が閾値以下のチャンクのみを残す（無関係チャンクを除外）"""
         ...
 
     def _build_prompt(self, question: str, contexts: list[dict]) -> str:
-        """検索結果を含むプロンプトを構築"""
+        """検索結果を含むプロンプトを構築（簡潔回答・推測禁止・論理的推論明示の指示）"""
         ...
 ```
 

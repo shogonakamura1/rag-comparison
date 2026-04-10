@@ -11,6 +11,11 @@ class EvaluationResult:
     rag_answer: str
     rag_sources: list[str]
     notebooklm_answer: str = ""
+    # NOTE: scores は現時点では未使用のプレースホルダー。
+    # v6以降の評価では evaluation/results/v*_*_analysis.md に手動採点を記録している。
+    # 将来的に LLM-as-Judge による自動採点（評価専用エージェント）を実装する際に
+    # ここに採点ロジックを差し込む予定。
+    # 詳細は evaluation/scoring_rubric.md と analysis.md ファイルを参照。
     scores: dict = field(default_factory=lambda: {"accuracy": 0, "coverage": 0, "citation": 0})
 
 
