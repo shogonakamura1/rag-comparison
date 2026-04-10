@@ -6,3 +6,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Claude Code チーム状態（一時情報）
+.claude/team-status.md
+.claude/worktrees/
